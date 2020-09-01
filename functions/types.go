@@ -8,13 +8,23 @@ type mbr struct{
 	Partitions[4] Partition
 }
 
+
+type ebr struct{
+	Status byte
+	Fit byte
+	Start int64 
+	Size int64
+	Next int64
+	Name [16]byte
+}
+
 type Partition struct{
 	Status byte
 	Type byte 
 	Fit [2]byte
 	Start int64
 	Size int64
-	Name[20] byte
+	Name[16] byte
 }
 
 type Mkdisk_command struct {
@@ -33,6 +43,13 @@ type Mfdisk_command struct{
 	Delete bool
 	Name string
 	Add bool
+}
+
+type Mkfs_command struct{
+	Identifier string
+	Type string
+	Add bool
+	Unit byte	
 }
 
 type Mount_command struct{

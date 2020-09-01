@@ -23,13 +23,18 @@ func Exec_unmount(com [] string){
 				fmt.Println("An error ocurred when trying to unmount partition")
 			}
 		}else{
-			fmt.Println("unrecognize command")
+			if(spplited_command[0]!=" " || spplited_command[0]!="" ||spplited_command[0]!="\n"||
+			spplited_command[0]!="\t"){
+				fmt.Println("unrecognize command")
+			}
 		}
 	}
-	unmount(unmount_command.List_id)
+	if(!Unmount(unmount_command.List_id)){
+		fmt.Println("Especificated id doesnt exists in mounted partitions")
+	}
 }
 
-func unmount(ids[20] string){
+func Unmount(ids[20] string)bool{
 	mounted:=false
 	for z:=0; z<len(ids);z++{
 		if(ids[z]!=""){
@@ -39,16 +44,10 @@ func unmount(ids[20] string){
 						Partitions_m[i] = Mounted_partition{}
 						fmt.Println("Partition", element.Identifier, "unmounted sucessfully")
 						mounted=true 
-					}else{
-						if(!mounted){
-							if(ids[z]!="" && element.Identifier!=""){
-								fmt.Println("Identifier", ids[z],"doesnt exists in mounted partitions")
-								mounted=false
-							}
-						}
 					}
 				}
 			}
 		}
 	}
+	return mounted
 }

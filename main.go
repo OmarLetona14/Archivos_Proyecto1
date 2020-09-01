@@ -60,12 +60,14 @@ func recognize_command(commands []string) {
 	case "fdisk":
 		functions.Exec_fdisk(commands)
 	case "pause":
-		fmt.Print("Exection paused \nPress any key to continue... ")
+		fmt.Print("\nPress any key to continue... ")
 		reader := bufio.NewReader(os.Stdin)
 		x, _ := reader.ReadString('\n')
 		x += ""
 	case "unmount":
 		functions.Exec_unmount(commands)
+	case "mkfs":
+
 	case "mount":
 		if(len(commands)>=2){
 			functions.Exec_mount(commands)

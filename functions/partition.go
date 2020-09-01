@@ -67,6 +67,11 @@ func PartitionProcess(cm Mfdisk_command){
 			input, _ := reader.ReadString('\n')
 			input = Get_text(input)
 			if strings.ToLower(input)=="s"{
+				mounted, id := IsMounted(cm.Path, cm.Name)
+				if(mounted){
+					Unmount(id)
+					fmt.Println("Unmounted partition")
+				}
 				setDefaultValues(&mbrs, cm.Name)
 				ModifyMBR(cm.Path, mbrs) //Sobreescribimos en el archivo binario la nueva tabla mbr
 				fmt.Println("Partition deleted sucessfully")
@@ -88,6 +93,23 @@ func PartitionProcess(cm Mfdisk_command){
 	}else{
 		fmt.Println("Incorrect combination")
 	}
+}
+
+//VERIFICA SI UNA PARTICION SE ENCUENTRA MONTADA, RECIBE EL PATH A LA PARTICION Y EL NOMBRE
+func IsMounted(path string, name string)(bool, [20]string){
+	var un [20] string
+	var i int
+	var exists bool =false 
+	for _,element := range Partitions_m {
+		if(CompareBytes(path, element.Path)){
+			if(CompareBytes(name, element.Name) && i<20){
+				exists =true
+				un[i] = element.Identifier 
+				i+=1
+			}
+		}
+	}
+	return exists,un
 }
 
 func setDefaultValues(m *mbr, name string){
