@@ -64,6 +64,8 @@ func recognize_command(commands []string) {
 		reader := bufio.NewReader(os.Stdin)
 		x, _ := reader.ReadString('\n')
 		x += ""
+	case "unmount":
+		functions.Exec_unmount(commands)
 	case "mount":
 		if(len(commands)>=2){
 			functions.Exec_mount(commands)

@@ -40,6 +40,9 @@ type Mount_command struct{
 	Name string
 }
 
+type Unmount_command struct{
+	List_id [20]string
+}
 type Mounted_disk struct{
 	Name string
 	Path string

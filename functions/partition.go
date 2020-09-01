@@ -70,7 +70,7 @@ func PartitionProcess(cm Mfdisk_command){
 				setDefaultValues(&mbrs, cm.Name)
 				ModifyMBR(cm.Path, mbrs) //Sobreescribimos en el archivo binario la nueva tabla mbr
 				fmt.Println("Partition deleted sucessfully")
-				PrintMBR(ReadMBR(cm.Path))
+				//PrintMBR(ReadMBR(cm.Path))
 			}else{
 				return
 			}

@@ -17,16 +17,11 @@ func ModifyMBR(file_path string, rec mbr){
 		log.Fatal(err)
 		fmt.Println("Cannot write the file")
 	}
-
-	rec_size := unsafe.Sizeof(rec)
-	fmt.Println("REC SIZE ", rec_size)
 	ss := &rec
 	
 	var mbr_buf bytes.Buffer
 	binary.Write(&mbr_buf, binary.BigEndian, ss)
 	WriteBytes(file, mbr_buf.Bytes())
-
-
 
 	var otro int8 = 0
 	s := &otro
