@@ -6,7 +6,7 @@ import(
 	
 )
 
-func Format(sb *Super_Boot, partition_size float64, partition_init float64){
+func Format(sb *Super_Boot, disk_name string, partition_size float64, partition_init float64){
 	avd_struct := avd{}
 	dd_struct := dd{}
 	inode_struct := inode{}
@@ -19,12 +19,6 @@ func Format(sb *Super_Boot, partition_size float64, partition_init float64){
 	block_size := float64(unsafe.Sizeof(block_struct))
 	bita_size := float64(unsafe.Sizeof(bit))
 	sb_size := float64(unsafe.Sizeof(sb))
-	fmt.Println("SUPER BLOCK SIZE",sb_size)
-	fmt.Println("AVD SIZE", avd_size)
-	fmt.Println("DD SIZE", dd_size)
-	fmt.Println("INODE SIZE", inode_size)
-	fmt.Println("BLOCK SIZE", block_size)
-	fmt.Println("BITACORA SIZE", bita_size)
 	//Numero de estructuras
 	struct_count := (partition_size - (2.0*sb_size)) / (27.0+ avd_size + dd_size +(5.0*inode_size +(20.0*block_size)+ bita_size)) 
 	//Calcular la cantidad de cada estructura
@@ -33,6 +27,7 @@ func Format(sb *Super_Boot, partition_size float64, partition_init float64){
 	inode_count := 5*struct_count
 	block_count := 4*inode_count
 	bita_count := struct_count
+	
 	//Calcular los inicios de cada estructura dentro de la particion
 	sb_init := partition_init
 	avd_bitmap_init := sb_init + sb_size
@@ -45,23 +40,8 @@ func Format(sb *Super_Boot, partition_size float64, partition_init float64){
 	block_init := block_bitmap_init + block_count
 	bita_init := block_init + (block_size*block_count)
 	bita_fin := bita_init + (bita_size*bita_count)
-	sb_backup := bita_fin + sb_size
-
-	fmt.Println("SUPER BLOCK INIT",sb_init)
-	fmt.Println("AVD BITMAP INIT",avd_bitmap_init)
-	fmt.Println("AVD INIT",avd_init)
-	fmt.Println("DD BITMAP INIT",dd_bitmap_init)
-	fmt.Println("DD INIT",dd_init)
-	fmt.Println("INODE BITMAP INIT",inode_bitmap_init)
-	fmt.Println("INODE INIT",inode_init)
-	fmt.Println("BLOCK BITMAP INIT",block_bitmap_init)
-	fmt.Println("BLOCK INIT",block_init)
-	fmt.Println("BITACAORA INIT",bita_init)
-	fmt.Println("BITACORA FIN",bita_fin)
-	fmt.Println("SUPER BLOQUE COPIA",sb_backup)
-	
-	//Verificar si llegamos a el final de la particion, sino, ocurrio un error
-	fmt.Println("FINAL VALUE", sb_backup)
+	sb_backup := bita_fin + sb_size	
+	fmt.Println("FIN DE LA PARTICION", sb_backup)
 	//Asignar valores del formateo al Super Boot
 	sb.Virtual_tree_count = avd_count
 	sb.Directory_detail_count = dd_count
@@ -76,7 +56,7 @@ func Format(sb *Super_Boot, partition_size float64, partition_init float64){
 	sb.Mount_count = 1
 	sb.Inp_bitmap_directory_tree = avd_bitmap_init
 	sb.Inp_directory_tree = avd_init
-	sb.Inp_bitmap_directory_detail = dd_bitmap_init
+	sb.Inp_directory_tree = dd_bitmap_init
 	sb.Inp_directory_detail = dd_init
 	sb.Inp_bitmap_inode_table = inode_bitmap_init
 	sb.Inp_inode_table = inode_init
@@ -87,6 +67,41 @@ func Format(sb *Super_Boot, partition_size float64, partition_init float64){
 	sb.Directory_detail_size = dd_size
 	sb.Inode_size = inode_size
 	sb.Block_size = block_size
+	printSB(sb, int64(partition_init))
+}
+
+func printSB(sb *Super_Boot, part_init int64){
+	//Inicio detalles generales
+	fmt.Println("DISK NAME", sb.Virtual_disk_name)
+	//Cantidades
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL:",sb.Virtual_tree_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO:",sb.Directory_detail_count)
+	fmt.Println("CANTIDAD DE INODOS:",sb.Inodes_count)
+	fmt.Println("CANTIDAD DE BLOQUES DE DATOS:",sb.Block_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL LIBRES:",sb.Virtual_tree_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO LIBRES:",sb.Virtual_tree_count)
+	fmt.Println("CANTIDAD DE INODOS LIBRES:",sb.Virtual_tree_count)
+	fmt.Println("CANTIDAD DE BLOQUES DE DATOS LIBRES:",sb.Virtual_tree_count)
+	fmt.Println("FECHA DE CREACION:", string(sb.Creation_date[:]))
+	fmt.Println("FECHA DE ULTIMA MODIFICACION:", string(sb.Last_mount_date[:]))
+	fmt.Println("CONTADOR DE MONTAJES DEL SISTEMA DE ARCHIVOS:", sb.Mount_count)
+	//Inicios
+	fmt.Println("INICIO DEL SUPER BLOQUE:",part_init)
+	fmt.Println("INICIO DEL BITMAP DEL AVD:",sb.Inp_bitmap_directory_tree )
+	fmt.Println("INICIO DEL AVD:",sb.Inp_directory_tree)
+	fmt.Println("INICIO DEL BITMAP DEL DD:",sb.Inp_directory_tree)
+	fmt.Println("INICIO DEL DD:",sb.Inp_directory_detail)
+	fmt.Println("INICIO DEL BITMAP DEL INODO:",sb.Inp_bitmap_inode_table)
+	fmt.Println("INICIO DEL INODO:",sb.Inp_inode_table)
+	fmt.Println("INICIO DEL BITMAP DEL BLOQUE:",sb.Inp_bitmap_block)
+	fmt.Println("INICIO DEL BLOQUE:",sb.Inp_block)
+	fmt.Println("INICIO DE LA BITACORA:",sb.Inp_bitacora)
+	//Tamanios
+	fmt.Println("TAMANIO DEL AVD", sb.Directory_tree_size)
+	fmt.Println("TAMANIO DEL DD", sb.Directory_detail_size)
+	fmt.Println("TAMANIO DEL INODO", sb.Inode_size)
+	fmt.Println("TAMANIO DEL BLOQUE DE DATOS", sb.Block_size)
+
 }
 
 

@@ -23,6 +23,12 @@ func Exec_mkfs(com [] string){
 		}
 	}
 	if(mkfs_command.Identifier!=""){
+		verify, mounted_partition := VerifyMountedPartition(mkfs_command.Identifier) 
+		if verify {
+			FormatPartition(mkfs_command, mounted_partition)
+		}else{
+			fmt.Println("The specified partition is not found or does not exist")
+		}
 		
 	}else{
 		fmt.Println("Not enough arguments")
@@ -30,6 +36,8 @@ func Exec_mkfs(com [] string){
 
 }
 
-func FormatPartition(mkfs Mkfs_command){
-
+func FormatPartition(mkfs Mkfs_command, m Mounted_partition){
+	var new_format = Super_Boot{}
+	Format(&new_format, m.Dsk.Name,float64(m.Size), float64(m.Init))
 }
+

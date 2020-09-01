@@ -7,9 +7,10 @@ import (
 	"os"
 )
 
-
 func Exec_mount(com [] string){
+	var current_mounted_disk Mounted_disk
 	var new_mount Mount_command
+	var unmounted_partition Partition
 	for _,element := range com {
 		spplited_command := strings.Split(element, Equalizer)
 		switch  strings.ToLower(spplited_command[0]) {
@@ -21,18 +22,27 @@ func Exec_mount(com [] string){
 				return
 			}
 		case "-name":
-			dsik := ReadMBR(new_mount.Path)
-			if(!verifyMountedDisk(GetPath(new_mount.Path))){
-				mount_disk(GetPath(new_mount.Path))
-			}
-			for _,element := range dsik.Partitions {
-				name_dsk := strings.TrimRight(string(element.Name[:])," ") 
-				if(CompareBytes(spplited_command[1],name_dsk)){
-					new_mount.Name = spplited_command[1]
+			//Primero verificamos si la particion no esta montada
+			v, _ := VerifyMountedPartitionByName(spplited_command[1])
+			if(!v){
+				//Obtenemos el MBR del disco especificado
+				dsik := ReadMBR(new_mount.Path)
+				unmounted_partition =GetPartitionByName(dsik,spplited_command[1])
+				if(!verifyMountedDisk(GetPath(new_mount.Path))){
+					mount_disk(GetPath(new_mount.Path))
 				}
-			}
-			if(new_mount.Name == ""){
-				fmt.Println("Partition doesnt exists in disk")
+				current_mounted_disk = GetDiskByPath(new_mount.Path)
+				for _,element := range dsik.Partitions {
+					name_dsk := strings.TrimRight(string(element.Name[:])," ") 
+					if(CompareBytes(spplited_command[1],name_dsk)){
+						new_mount.Name = spplited_command[1]
+					}
+				}
+				if(new_mount.Name == ""){
+					fmt.Println("Partition doesnt exists in disk")
+				}
+			}else{
+				fmt.Println("This partition is already mounted")
 			}
 		}
 	}
@@ -41,6 +51,11 @@ func Exec_mount(com [] string){
 		mounted.Path = new_mount.Path
 		mounted.Name = new_mount.Name
 		mounted.Identifier = GetMountIdentifier(new_mount.Path)
+		if(current_mounted_disk.Identifier!=""){
+			mounted.Dsk = current_mounted_disk
+		}
+		mounted.Init = unmounted_partition.Start
+		mounted.Size = unmounted_partition.Size
 		fmt.Println("PARTITION ", mounted.Identifier, "MOUNTED")
 		Partitions_m[Partitions_size] = mounted
 		Partitions_size += 1
@@ -99,4 +114,33 @@ func verifyMountedDisk(path string, name string)bool{
 
 func GetIdentifier(elements int) string {
 	return string(97+elements)
+}
+
+func VerifyMountedPartitionByName(name string)(bool, Mounted_partition){
+	for _,element := range Partitions_m{
+		if(CompareBytes(name, element.Name)){
+			fmt.Println("Partition",name, "Is already mounted", element.Name)
+			return true, element
+		}
+	}
+	return false, Mounted_partition{}
+}
+
+
+func VerifyMountedPartition(id string)(bool, Mounted_partition){
+	for _,element := range Partitions_m{
+		if(CompareBytes(id, element.Identifier)){
+			return true, element
+		}
+	}
+	return false, Mounted_partition{}
+}
+
+func GetDiskByPath(path string) Mounted_disk{
+	for _, element := range Disks_m{
+		if(CompareBytes(path, element.Path)){
+			return element
+		}
+	}
+	return Mounted_disk{}
 }

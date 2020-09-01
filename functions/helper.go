@@ -25,14 +25,17 @@ func Splitter(txt string) []string {
 }
 
 func CompareBytes(str1 string, str2 string)bool{
-	for i:=0;i< len(str1); i++{
-		if(!(i>=len(str1)) && !(i>=len(str2))){
-			if(!(str1[i]==str2[i])){
-				return false
+	if(str2!=""){
+		for i:=0;i< len(str1); i++{
+			if(!(i>=len(str1)) && !(i>=len(str2))){
+				if(!(str1[i]==str2[i])){
+					return false
+				}
 			}
 		}
+		return true
 	}
-	return true
+	return false
 }
 
 func Calc_filesize(unit string, size int, partition bool)int64{

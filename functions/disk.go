@@ -72,3 +72,12 @@ func Exec_mkdisk(com []string)  {
 	}
 }
 
+func GetPartitionByName(m mbr, name string) Partition{
+	for _,e := range m.Partitions{
+		nm := string(e.Name[:])
+		if(CompareBytes(name, nm)){
+			return e
+		}
+	}
+	return Partition{}
+}

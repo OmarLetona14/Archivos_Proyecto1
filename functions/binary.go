@@ -9,6 +9,27 @@ import (
 	"fmt"
 )
 
+func WriteSuperB(file_path string, super Super_Boot, init int64){
+	file, err := os.Create(file_path)
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println("Cannot write the file")
+	}
+	//Escribir el superboot en el principio de la particion
+	file.Seek(init, 0)
+	ss := &super
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+}
+
 
 func ModifyMBR(file_path string, rec mbr){
 	file, err := os.Create(file_path)

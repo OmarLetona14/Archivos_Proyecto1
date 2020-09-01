@@ -71,8 +71,10 @@ type Mounted_disk struct{
 type Mounted_partition struct{
 	Name string
 	Path string
+	Init int64
+	Size int64
 	Identifier string
-	dsk Mounted_disk
+	Dsk Mounted_disk
 }
 
 type Super_Boot struct{

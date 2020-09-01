@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"strings"
 	"strconv"
+	"unsafe"
 	"os"
 	"bufio"
 )
@@ -70,7 +71,6 @@ func PartitionProcess(cm Mfdisk_command){
 				mounted, id := IsMounted(cm.Path, cm.Name)
 				if(mounted){
 					Unmount(id)
-					fmt.Println("Unmounted partition")
 				}
 				setDefaultValues(&mbrs, cm.Name)
 				ModifyMBR(cm.Path, mbrs) //Sobreescribimos en el archivo binario la nueva tabla mbr
@@ -174,7 +174,8 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 		if(mbr_table.Partitions[i].Status == '0'){			
 			//SE VERIFICAN LOS VALORES DE INICIO
 			if(i==0){
-				mbr_table.Partitions[i].Start = 0
+				str_mbr := unsafe.Sizeof(mbr_table)
+				mbr_table.Partitions[i].Start = int64(str_mbr)
 				//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
 				if(part_size>mbr_table.Partitions[i+1].Start && mbr_table.Partitions[i+1].Start!=0){
 					fmt.Println("There is not enough space ")

@@ -67,7 +67,7 @@ func recognize_command(commands []string) {
 	case "unmount":
 		functions.Exec_unmount(commands)
 	case "mkfs":
-
+		functions.Exec_mkfs(commands)
 	case "mount":
 		if(len(commands)>=2){
 			functions.Exec_mount(commands)
