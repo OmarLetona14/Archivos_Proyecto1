@@ -32,7 +32,7 @@ func Exec_fdisk(com []string) {
 		case "-type":
 			new_partition.Type =  strings.ToLower(spplited_command[1])[0]
 		case "-fit":
-			var fit_slice[1] byte
+			var fit_slice[2] byte
 			copy(fit_slice[:], strings.ToLower(spplited_command[1])) 
 			new_partition.Fit = fit_slice
 		case "-delete":
@@ -64,7 +64,7 @@ func PartitionProcess(cm Mfdisk_command){
 
 	}else if(!cm.Delete && !cm.Add){
 		mbr_table := ReadMBR(cm.Path) //OBTENEMOS LA TABLA MBR DEL DISCO ESPECIFICADO
-		if(verifyDefaultValues(cm, mbr_table)){
+		if(verifyDefaultValues(&cm, mbr_table)){
 			if(createPart(&mbr_table, cm)){//Modificamos los datos del mbr
 				ModifyMBR(cm.Path, mbr_table) //Sobreescribimos en el archivo binario la nueva tabla mbr
 				PrintMBR(ReadMBR(cm.Path))
@@ -77,13 +77,12 @@ func PartitionProcess(cm Mfdisk_command){
 
 
 //SE HACEN TODAS LAS VERIFICACIONES ANTES DE CREAR LA PARTICION
-func verifyDefaultValues(cm Mfdisk_command, mbr_table mbr)(Part_error bool){
+func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 	if(cm.Fit[0]==0){
 		copy(cm.Fit[:],"wf")
 	}
 	if cm.Unit == 0 {
 		cm.Unit = 'k'
-		fmt.Println("You didnt specify an unit size")
 	}
 	if cm.Type == 0{
 		cm.Type = 'p'
@@ -109,9 +108,12 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 	i:=0
 	for !created && !(i>=len(mbr_table.Partitions)){
 		if(mbr_table.Partitions[i].Status == '0'){
+			//SE VERIFICAN LOS VALORES DE INICIO
 			if(i==0){
 				mbr_table.Partitions[i].Start = 0
 			}else{
+				//SI LA PARTICION QUE SE QUIERE CREAR EXCEDE EL TAMANIO DEL DISCO LA FUNCION RETORNARA Y NO SE CREARA LA PARTICION
+				//SE CALCULA INICIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION QUE SE QUIERE CREAR
 				verifyValue := mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size + part_size
 				strt :=  mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size 
 				if(!(verifyValue>mbr_table.Size)){
@@ -122,6 +124,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 					return
 				}
 			}
+			//SE LLENAN LOS VALORES DE LA PARTICION CONTENIDA EN EL MBR
 			mbr_table.Partitions[i].Status = 'i'
 			mbr_table.Partitions[i].Type = cm.Type
 			mbr_table.Partitions[i].Fit = cm.Fit

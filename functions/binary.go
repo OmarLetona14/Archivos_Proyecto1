@@ -128,7 +128,7 @@ func PrintMBR(m mbr){
 		fmt.Println("Partition", i)
 		fmt.Println("Partition status", string(par.Status))
 		fmt.Println("Partition type", string(par.Type))
-		fmt.Println("Partition fit", string(par.Fit[0]))
+		fmt.Println("Partition fit", string(par.Fit[:]))
 		fmt.Println("Partition start",par.Start)
 		fmt.Println("Partition size",par.Size)
 		parName := string(par.Name[:])

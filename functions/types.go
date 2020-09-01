@@ -11,7 +11,7 @@ type mbr struct{
 type Partition struct{
 	Status byte
 	Type byte 
-	Fit [1]byte
+	Fit [2]byte
 	Start int64
 	Size int64
 	Name[16] byte
@@ -29,7 +29,7 @@ type Mfdisk_command struct{
 	Unit byte
 	Path string
 	Type byte
-	Fit[1] byte
+	Fit[2] byte
 	Delete bool
 	Name string
 	Add bool
