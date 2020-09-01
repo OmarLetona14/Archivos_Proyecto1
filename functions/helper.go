@@ -61,3 +61,10 @@ func Get_text(txt string) string {
 	}
 	return txt
 }
+
+func GetPath(p string)(string, string){
+	sp := strings.Split(p, "/")
+	name := sp[len(sp)-1]
+	path := strings.TrimRight(p, name)
+	return path, name
+}

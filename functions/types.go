@@ -14,7 +14,7 @@ type Partition struct{
 	Fit [2]byte
 	Start int64
 	Size int64
-	Name[16] byte
+	Name[20] byte
 }
 
 type Mkdisk_command struct {
@@ -33,6 +33,26 @@ type Mfdisk_command struct{
 	Delete bool
 	Name string
 	Add bool
+}
+
+type Mount_command struct{
+	Path string
+	Name string
+}
+
+type Mounted_disk struct{
+	Name string
+	Path string
+	Size int
+	Identifier string
+	Count_mounted int
+}
+
+type Mounted_partition struct{
+	Name string
+	Path string
+	Identifier string
+	dsk Mounted_disk
 }
 
 type Super_Boot struct{

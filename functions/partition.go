@@ -82,7 +82,7 @@ func PartitionProcess(cm Mfdisk_command){
 		if(verifyDefaultValues(&cm, mbr_table)){
 			if(createPart(&mbr_table, cm)){//Modificamos los datos del mbr
 				ModifyMBR(cm.Path, mbr_table) //Sobreescribimos en el archivo binario la nueva tabla mbr
-				PrintMBR(ReadMBR(cm.Path))
+				//PrintMBR(ReadMBR(cm.Path))
 			} 
 		}
 	}else{
@@ -154,7 +154,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 			if(i==0){
 				mbr_table.Partitions[i].Start = 0
 				//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
-				if(part_size>mbr_table.Partitions[i+1].Start){
+				if(part_size>mbr_table.Partitions[i+1].Start && mbr_table.Partitions[i+1].Start!=0){
 					fmt.Println("There is not enough space ")
 					created=false
 					return
@@ -165,7 +165,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 				verifyValue := mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size + part_size
 				strt :=  mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size 
 				if(i!=3){
-					if(strt+part_size>mbr_table.Partitions[i+1].Start){
+					if(strt+part_size>mbr_table.Partitions[i+1].Start && mbr_table.Partitions[i+1].Start!=0){
 						//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
 						fmt.Println("There is not enough space ")
 						created=false

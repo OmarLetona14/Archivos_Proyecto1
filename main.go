@@ -65,13 +65,12 @@ func recognize_command(commands []string) {
 		x, _ := reader.ReadString('\n')
 		x += ""
 	case "mount":
-		fmt.Println(commands)
 		if(len(commands)>=2){
-			//function.Exec_mount(commands)
+			functions.Exec_mount(commands)
 		}else{
 			fmt.Println("MOUNTED PARTITIONS")
 			fmt.Println("-----------------------------------")
-			//functions.PrintMount()
+			functions.PrintMount()
 		}
 	default:
 		fmt.Println("Not supported command! ")
