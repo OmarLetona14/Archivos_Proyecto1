@@ -4,6 +4,7 @@ import(
 	"time"
 	"math/rand"
 	"strings"
+	"runtime"
 	"fmt"
 )
 
@@ -51,4 +52,12 @@ func Calc_filesize(unit string, size int, partition bool)int64{
 		fmt.Println("Invalid unit formmat")
 	}
 	return 0
+}
+func Get_text(txt string) string {
+	if runtime.GOOS == "windows" {
+		txt = strings.TrimRight(txt, "\r\n")
+	} else {
+		txt = strings.TrimRight(txt, "\n")
+	}
+	return txt
 }

@@ -5,6 +5,7 @@ import(
 	"strings"
 	"strconv"
 	"os"
+	"bufio"
 )
 
 func Exec_fdisk(com []string) {
@@ -47,21 +48,35 @@ func Exec_fdisk(com []string) {
 			}
 		}
 	}
-	if(new_partition.Path!="" && new_partition.Size!=0 && new_partition.Name!=""){
+	if(new_partition.Path!="" && new_partition.Size!=0 && new_partition.Name!="" || new_partition.Delete){
 		PartitionProcess(new_partition)
 	}else{
 		fmt.Println("Not enough arguments")
 	}
 }
-
-
 func PartitionProcess(cm Mfdisk_command){
 	if(cm.Add && cm.Delete){
 		fmt.Println("Invalid operation, canont combine add and delete")
-	}else if(cm.Add && !cm.Delete){
+	}else if(cm.Add){
 
-	}else if(cm.Delete && !cm.Add){
-
+	}else if(cm.Delete){
+		mbrs:= ReadMBR(cm.Path)
+		if verifyPartitionExistence(mbrs, cm.Name) {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Println("Are you sure of deleting this partition? [s/n]")
+			input, _ := reader.ReadString('\n')
+			input = Get_text(input)
+			if strings.ToLower(input)=="s"{
+				setDefaultValues(&mbrs, cm.Name)
+				ModifyMBR(cm.Path, mbrs) //Sobreescribimos en el archivo binario la nueva tabla mbr
+				fmt.Println("Partition deleted sucessfully")
+				PrintMBR(ReadMBR(cm.Path))
+			}else{
+				return
+			}
+		}else{
+			fmt.Println("Partition doesnt exists on disk")
+		}
 	}else if(!cm.Delete && !cm.Add){
 		mbr_table := ReadMBR(cm.Path) //OBTENEMOS LA TABLA MBR DEL DISCO ESPECIFICADO
 		if(verifyDefaultValues(&cm, mbr_table)){
@@ -75,11 +90,38 @@ func PartitionProcess(cm Mfdisk_command){
 	}
 }
 
+func setDefaultValues(m *mbr, name string){
+	for i,e := range m.Partitions{
+		n := string(e.Name[:])
+		if(CompareBytes(name, n)){
+			m.Partitions[i].Status = '0'
+			m.Partitions[i].Type = 0
+			m.Partitions[i].Fit[0] = 0
+			m.Partitions[i].Fit[1] = 0
+			m.Partitions[i].Start = 0
+			m.Partitions[i].Size =0
+			for z:=0;z<len(m.Partitions[i].Name);z++{
+				m.Partitions[i].Name[z]=0
+			}
+		}
+	}
+}
+
+func verifyPartitionExistence(m mbr, name string)(bool){
+	for _,e := range m.Partitions{
+		n := string(e.Name[:])
+		if CompareBytes(name,n){
+			return true
+		}
+	}
+	return false
+}
 
 //SE HACEN TODAS LAS VERIFICACIONES ANTES DE CREAR LA PARTICION
 func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 	if(cm.Fit[0]==0){
 		copy(cm.Fit[:],"wf")
+		fmt.Println()
 	}
 	if cm.Unit == 0 {
 		cm.Unit = 'k'
@@ -107,15 +149,29 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 	part_size := Calc_filesize(string(cm.Unit),int(cm.Size), true)
 	i:=0
 	for !created && !(i>=len(mbr_table.Partitions)){
-		if(mbr_table.Partitions[i].Status == '0'){
+		if(mbr_table.Partitions[i].Status == '0'){			
 			//SE VERIFICAN LOS VALORES DE INICIO
 			if(i==0){
 				mbr_table.Partitions[i].Start = 0
+				//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
+				if(part_size>mbr_table.Partitions[i+1].Start){
+					fmt.Println("There is not enough space ")
+					created=false
+					return
+				}
 			}else{
 				//SI LA PARTICION QUE SE QUIERE CREAR EXCEDE EL TAMANIO DEL DISCO LA FUNCION RETORNARA Y NO SE CREARA LA PARTICION
 				//SE CALCULA INICIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION QUE SE QUIERE CREAR
 				verifyValue := mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size + part_size
 				strt :=  mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size 
+				if(i!=3){
+					if(strt+part_size>mbr_table.Partitions[i+1].Start){
+						//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
+						fmt.Println("There is not enough space ")
+						created=false
+						return
+					}
+				}
 				if(!(verifyValue>mbr_table.Size)){
 					mbr_table.Partitions[i].Start = strt
 				}else{

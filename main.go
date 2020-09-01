@@ -6,7 +6,6 @@ import (
 	"strings"
 	"os"
 	"bufio"
-	"runtime"
 	"log"
 )
 
@@ -20,7 +19,7 @@ func main(){
 	for !finish_app {
 		fmt.Print(">")
 		input, _ := reader.ReadString('\n')
-		input = get_text(input)
+		input = functions.Get_text(input)
 		if input != "x"{
 			if !strings.HasPrefix(input, "#") { 
 				execute_console(input)
@@ -34,7 +33,7 @@ func main(){
 
 func execute_console(i string) {
 	if(!strings.HasSuffix(i,"/*")){
-		m_command += get_text(i)
+		m_command += functions.Get_text(i)
 		recognize_command(functions.Splitter(m_command))
 		m_command = ""
 	}else{
@@ -42,14 +41,7 @@ func execute_console(i string) {
 	}
 }
 
-func get_text(txt string) string {
-	if runtime.GOOS == "windows" {
-		txt = strings.TrimRight(txt, "\r\n")
-	} else {
-		txt = strings.TrimRight(txt, "\n")
-	}
-	return txt
-}
+
 
 func recognize_command(commands []string) {
 	switch strings.ToLower(commands[0]) {
