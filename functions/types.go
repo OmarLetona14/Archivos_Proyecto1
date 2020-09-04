@@ -60,6 +60,20 @@ type Mount_command struct{
 type Unmount_command struct{
 	List_id [20]string
 }
+
+type Mkfile_command struct{
+	Id string
+	Path string
+	P bool
+	Size int64
+	Cont string
+}
+
+type Mkdir_command struct{
+	Id string
+	Path string
+	P bool
+}
 type Mounted_disk struct{
 	Name string
 	Path string
@@ -111,37 +125,37 @@ type Super_Boot struct{
 }
 
 type avd struct{
-	creation_date [25]byte
-	directory_name [25]byte
-	sub_directory_pointers [6] *avd
-	directory_detail dd
-	avd_next *avd 
-	proper [25]byte
+	Creation_date [25]byte
+	Directory_name [25]byte
+	Sub_directory_pointers [6] *avd
+	Directory_detail dd
+	Avd_next *avd 
+	Proper [25]byte
 }
 
 type dd struct{
-	table [5] inode_register
-	next_pointer *dd
+	Table [5] inode_register
+	Next_pointer *dd
 }
 
 type inode_register struct{
-	file_name [25] byte
-	inode_pointer *inode
-	creation_date [25] byte
-	modification_date [25]byte
+	File_name [25] byte
+	Inode_pointer *inode
+	Creation_date [25] byte
+	Modification_date [25]byte
 }
 
 
 type inode struct{
-	inode_number int64
-	file_size int64
-	block_count int64
-	block_array [4] block
-	indirect_pointer *inode
+	Inode_number int64
+	File_size int64
+	Block_count int64
+	Block_array [4] block
+	Indirect_pointer *inode
 }
 
 type block struct{
-	data [25] byte
+	Data [25] byte
 }
 
 

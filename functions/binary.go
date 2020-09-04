@@ -31,6 +31,28 @@ func WriteSuperB(file_path string, super Super_Boot, init int64){
 }
 
 
+func WriteRoot(file_path string, n_avd avd, init int64){
+	file, err := os.Create(file_path)
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println("Cannot write the file")
+	}
+	//Escribir el superboot en el principio de la particion
+	file.Seek(init, 0)
+	ss := &n_avd
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+}
+
+
 func ModifyMBR(file_path string, rec mbr){
 	file, err := os.Create(file_path)
 	defer file.Close()
@@ -117,6 +139,29 @@ func ReadMBR(file_path string)(m mbr) {
 }
 
 func ReadSB(file_path string, part_init int64)(m Super_Boot) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal(err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del SUPER_BOOT
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		log.Fatal("binary.Read failed", err)
+	}
+	return
+}
+
+func ReadAVD(file_path string, part_init int64)(m avd) {
 	//Abrimos/creamos un archivo.
 	file, err := os.Open(file_path)
 	defer file.Close() 
