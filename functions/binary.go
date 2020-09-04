@@ -116,6 +116,30 @@ func ReadMBR(file_path string)(m mbr) {
 	return
 }
 
+func ReadSB(file_path string, part_init int64)(m Super_Boot) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal(err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del SUPER_BOOT
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		log.Fatal("binary.Read failed", err)
+	}
+	return
+}
+
+
 func WriteBytes(file *os.File, bytes []byte) {
 	_, err := file.Write(bytes)
 	if err != nil {
