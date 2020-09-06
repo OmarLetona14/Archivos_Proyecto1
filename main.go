@@ -76,6 +76,8 @@ func recognize_command(commands []string) {
 			fmt.Println("-----------------------------------")
 			functions.PrintMount()
 		}
+	case "mkdir":
+		functions.Exec_mkdir(commands)
 	default:
 		fmt.Println("Not supported command! ")
 	}

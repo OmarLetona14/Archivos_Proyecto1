@@ -9,22 +9,27 @@ var current_p Mounted_partition
 var current_sb Super_Boot
 var p_command bool
 var current_pointer *avd 
+var id_avd int
+var root avd
 
-func AllDirectories(dir string, part Mounted_partition, p_com bool){
-	current_p = part
-	GetSB()
-	p_command = p_com
+func addDirectory(dir string, p_com bool){
+	if(root.Creation_date[0]==0){
+		root = createAVD("/", "")
+	}
+	AllDirectories(dir, p_com)
+	createTreeReport(&root)
+	fmt.Println(Content)
+}
+
+
+func AllDirectories(dir string, p_com bool){
+	p_command = p_com 
 	directories := strings.Split(dir, "/")
+	current_pointer = &root
+	fmt.Println(directories)
 	for _, e := range directories{
-		if(e!=""){
-			root := ReadAVD(current_p.Path + current_p.Name, current_p.Init)
-			if(root.Creation_date[0]==0){//Comprueba si existe la carpeta root
-				//Se crea la carpeta root
-				WriteRoot(current_p.Path +current_p.Name, createAVD("/", ""), current_sb.Inp_directory_tree)
-				current_pointer = &root
-			}else{
-				createDirectory(e)	
-			}
+		if(e!=" " && e!=""){
+			createDirectory(e)
 		}
 	}
 }
@@ -63,6 +68,7 @@ func createDirectory(directory string){
 	}
 }
 
+
 func GetFreeIndex(dir *avd)(int64, bool){
 	for i,e := range dir.Sub_directory_pointers{
 		if(e==nil){
@@ -71,6 +77,7 @@ func GetFreeIndex(dir *avd)(int64, bool){
 	}
 	return 0,false
 }
+
 
 func searchSub(r* avd, dir_name string)(bool, *avd){
 	for _,e := range r.Sub_directory_pointers{
@@ -91,12 +98,23 @@ func createAVD(directory_name string, proper string) avd{
 	v:=avd{}
 	var pointers [6] *avd
 	var ddetail dd
+	v.Id = id_avd
+	id_avd += 1
 	v.Creation_date = GetCurrentTime()
 	copy(v.Directory_name[:], directory_name)
 	v.Sub_directory_pointers = pointers
-	v.Directory_detail = ddetail
+	v.Directory_detail = &ddetail
 	copy(v.Proper[:], proper)
 	return v
+}
+
+func printTree(current *avd){
+	if(current!=nil){
+		fmt.Println(string(current.Directory_name[:]), "At position", current.Id)
+		for _,e := range current.Sub_directory_pointers{
+			printTree(e)
+		}
+	}
 }
 
 func GetSB(){

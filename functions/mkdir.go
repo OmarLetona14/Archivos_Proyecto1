@@ -15,21 +15,23 @@ func Exec_mkdir(com [] string){
 		case "-id":
 			mkdir_command.Id = spplited_command[1]
 		case "-path":
-			mkdir_command.Path = spplited_command[0]
+			mkdir_command.Path = spplited_command[1]
 		case "-p":
 			mkdir_command.P = true
 		}
 	}
-
 	if(GetPartition(mkdir_command.Id)){
-		
+		pth := mkdir_command.Path
+		if ContainsQuotes(mkdir_command.Path) {
+			pth = DeleteQuotes(mkdir_command.Path)
+		}
+		addDirectory(pth, mkdir_command.P)
+		fmt.Println("Directory " , pth, " created correctly")
 	}else{
 		fmt.Println("Specificated partition doesnt exist")
 	}
 
 }
-
-
 
 func GetPartition(identifier string)bool{
 	for _, e := range Partitions_m{

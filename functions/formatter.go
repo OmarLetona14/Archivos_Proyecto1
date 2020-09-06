@@ -31,7 +31,7 @@ func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_i
 	dd_count := struct_count
 	inode_count := 5*struct_count
 	block_count := 4*inode_count
-	bita_count := struct_count
+	//bita_count := struct_count
 	
 	//Calcular los inicios de cada estructura dentro de la particion
 	sb_init := partition_init
@@ -44,10 +44,8 @@ func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_i
 	block_bitmap_init := inode_init + (inode_count*inode_size)
 	block_init := block_bitmap_init + block_count
 	bita_init := block_init + (block_size*block_count)
-	bita_fin := bita_init + (bita_size*bita_count)
-	sb_backup := bita_fin + sb_size	
-	fmt.Println("FIN DE LA PARTICION", sb_backup)
-	fmt.Println("Tamanio de del super_bloque", sb)
+	//bita_fin := bita_init + (bita_size*bita_count)
+	//sb_backup := bita_fin + sb_size	
 	//Asignar valores del formateo al Super Boot
 	copy(sb.Virtual_disk_name[:], disk.Name)
 	sb.Virtual_tree_count = avd_count

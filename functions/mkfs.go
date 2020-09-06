@@ -41,8 +41,8 @@ func FormatPartition(mkfs Mkfs_command, m Mounted_partition){
 	Format(&new_format, m.Dsk ,int64(m.Size), int64(m.Init))
 	disk_path := m.Dsk.Path + m.Dsk.Name 
 	WriteSuperB(disk_path,new_format,m.Init)
-	s := ReadSB(disk_path, m.Init)
-	printSB(&s, int64(m.Init))
-	printSB(&new_format, int64(m.Init))
+	//s := ReadSB(disk_path, m.Init)
+	//printSB(&s, int64(m.Init))
+	//printSB(&new_format, int64(m.Init))
 }
 

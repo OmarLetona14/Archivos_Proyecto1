@@ -125,10 +125,11 @@ type Super_Boot struct{
 }
 
 type avd struct{
+	Id int
 	Creation_date [25]byte
 	Directory_name [25]byte
 	Sub_directory_pointers [6] *avd
-	Directory_detail dd
+	Directory_detail *dd
 	Avd_next *avd 
 	Proper [25]byte
 }

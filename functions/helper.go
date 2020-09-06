@@ -24,6 +24,19 @@ func Splitter(txt string) []string {
 	return commands
 }
 
+func DeleteQuotes(str string) (strQu string) {
+	quLeft := strings.TrimLeft(str, "\"")
+	strQu = strings.TrimRight(quLeft, "\"")
+	return
+}
+
+func ContainsQuotes(str string)bool{
+	if(strings.HasPrefix(str, "\"")){
+		return true
+	}
+	return false
+}
+
 func CompareBytes(str1 string, str2 string)bool{
 	if(str2!=""){
 		for i:=0;i< len(str1); i++{
