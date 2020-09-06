@@ -20,7 +20,7 @@ func main(){
 		fmt.Print(">")
 		input, _ := reader.ReadString('\n')
 		input = functions.Get_text(input)
-		if input != "x"{
+		if strings.ToLower(input) != "x"{
 			if !strings.HasPrefix(input, "#") { 
 				execute_console(input)
 			}

@@ -3,6 +3,7 @@ package functions
 import(
 	"strings"
 	"fmt"
+	"errors"
 )
 
 var current_p Mounted_partition
@@ -12,29 +13,36 @@ var current_pointer *avd
 var id_avd int
 var root avd
 
-func addDirectory(dir string, p_com bool){
+func addDirectory(dir string, p_com bool)(e error){
 	if(root.Creation_date[0]==0){
 		root = createAVD("/", "")
 	}
-	AllDirectories(dir, p_com)
-	createTreeReport(&root)
-	fmt.Println(Content)
+	err := AllDirectories(dir, p_com)
+	if err!=nil {
+		return errors.New("*******************")
+	}
+	//createTreeReport(&root)
+	return nil
 }
 
 
-func AllDirectories(dir string, p_com bool){
+func AllDirectories(dir string, p_com bool)(e error){
 	p_command = p_com 
 	directories := strings.Split(dir, "/")
 	current_pointer = &root
 	fmt.Println(directories)
 	for _, e := range directories{
 		if(e!=" " && e!=""){
-			createDirectory(e)
+			err := createDirectory(e)
+			if(err!=nil){
+				return errors.New("Couldnt create directory")
+			}
 		}
 	}
+	return nil
 }
 
-func createDirectory(directory string){
+func createDirectory(directory string)(e error){
 	comprobate, dir := searchSub(current_pointer, directory)//Comprueba si el subdirectorio existe dentro del directorio actual
 	if(comprobate){
 		//Si existe cambiamos de puntero
@@ -58,14 +66,12 @@ func createDirectory(directory string){
 				//Actualizamos el puntero
 				current_pointer = current_pointer.Avd_next.Sub_directory_pointers[0]
 			}
-				
 		}else{
 			//Si el parametro p no esta espeficiado muestra un error
-			fmt.Println("***** FATAL *****")
-			fmt.Println("Error: Directory doesnt exists")
-			return 
+			return errors.New("Error: Directory doesnt exists")
 		}
 	}
+	return nil
 }
 
 

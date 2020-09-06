@@ -56,7 +56,7 @@ func Exec_mount(com [] string){
 		}
 		mounted.Init = unmounted_partition.Start
 		mounted.Size = unmounted_partition.Size
-		fmt.Println("PARTITION ", mounted.Identifier, "MOUNTED")
+		fmt.Println("********** PARTITION ", mounted.Identifier, "MOUNTED **********")
 		Partitions_m[Partitions_size] = mounted
 		Partitions_size += 1
 		

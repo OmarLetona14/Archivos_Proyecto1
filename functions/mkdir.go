@@ -25,8 +25,12 @@ func Exec_mkdir(com [] string){
 		if ContainsQuotes(mkdir_command.Path) {
 			pth = DeleteQuotes(mkdir_command.Path)
 		}
-		addDirectory(pth, mkdir_command.P)
-		fmt.Println("Directory " , pth, " created correctly")
+		err := addDirectory(pth, mkdir_command.P)
+		if(err==nil){
+			fmt.Println("********** DIRECTORY  " , pth, " CREATED CORRECTLY **********")
+		}else{
+			fmt.Println("********** AN ERROR OCCURRED WHEN TRYING TO CREATE DIRECTORY **********")
+		}
 	}else{
 		fmt.Println("Specificated partition doesnt exist")
 	}

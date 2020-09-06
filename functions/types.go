@@ -88,6 +88,7 @@ type Mounted_partition struct{
 	Init int64
 	Size int64
 	Identifier string
+	Formatted bool
 	Dsk Mounted_disk
 }
 

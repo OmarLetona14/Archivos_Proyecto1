@@ -26,14 +26,14 @@ func Exec_mkfs(com [] string){
 		verify, mounted_partition := VerifyMountedPartition(mkfs_command.Identifier) 
 		if verify {
 			FormatPartition(mkfs_command, mounted_partition)
+			mounted_partition.Formatted = true
+			fmt.Println("********** PARTITION FORMATTED CORRECTLY **********")
 		}else{
 			fmt.Println("The specified partition is not found or does not exist")
-		}
-		
+		}	
 	}else{
 		fmt.Println("Not enough arguments")
 	}
-
 }
 
 func FormatPartition(mkfs Mkfs_command, m Mounted_partition){
