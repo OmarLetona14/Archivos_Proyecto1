@@ -15,8 +15,11 @@ func Exec_mount(com [] string){
 		spplited_command := strings.Split(element, Equalizer)
 		switch  strings.ToLower(spplited_command[0]) {
 		case "-path":
+			if ContainsQuotes(spplited_command[1]){
+				spplited_command[1] = DeleteQuotes(spplited_command[1])
+			}
 			if _, err := os.Stat(spplited_command[1]); !os.IsNotExist(err) {
-				new_mount.Path = spplited_command[1]
+					new_mount.Path = spplited_command[1]
 			}else{
 				fmt.Println("Especificated disk doesnt exist")
 				return
@@ -48,7 +51,11 @@ func Exec_mount(com [] string){
 	}
 	if(new_mount.Path != "" && new_mount.Name != ""){
 		var mounted Mounted_partition
-		mounted.Path = new_mount.Path
+		if(!ContainsQuotes( new_mount.Path)){
+			mounted.Path = new_mount.Path
+		}else{
+			mounted.Path = DeleteQuotes(new_mount.Path)
+		}
 		mounted.Name = new_mount.Name
 		mounted.Identifier = GetMountIdentifier(new_mount.Path)
 		if(current_mounted_disk.Identifier!=""){

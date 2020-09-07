@@ -21,6 +21,9 @@ func Exec_mkfile(com [] string){
 		case "-id":
 			mkfile_command.Id = spplited_command[1]
 		case "-path":
+			if(ContainsQuotes(spplited_command[1])){
+				spplited_command[1] = DeleteQuotes(spplited_command[1])
+			}
 			mkfile_command.Path = spplited_command[1]
 		case "-p":
 			mkfile_command.P = true
@@ -40,7 +43,7 @@ func Exec_mkfile(com [] string){
 		}
 	}
 	if(mkfile_command.P){
-		CreateDir()
+		addDirectory()
 	}
 	
 }

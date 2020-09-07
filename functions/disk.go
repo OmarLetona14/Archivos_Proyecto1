@@ -46,6 +46,9 @@ func Exec_mkdisk(com []string)  {
 				fmt.Println("Size must be positive! ")
 			}
 		case "-path":
+			if ContainsQuotes(spplited_command[1]){
+				spplited_command[1] = DeleteQuotes(spplited_command[1])
+			}
 			if _, err := os.Stat(spplited_command[1]); os.IsNotExist(err) {
 				os.MkdirAll(spplited_command[1], os.ModePerm)
 			}

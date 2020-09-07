@@ -25,7 +25,7 @@ func Exec_mkdir(com [] string){
 		if ContainsQuotes(mkdir_command.Path) {
 			pth = DeleteQuotes(mkdir_command.Path)
 		}
-		err := addDirectory(pth, mkdir_command.P)
+		err := AddDirectory(pth, mkdir_command.P)
 		if(err==nil){
 			fmt.Println("********** DIRECTORY  " , pth, " CREATED CORRECTLY **********")
 		}else{

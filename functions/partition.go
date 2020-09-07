@@ -25,6 +25,9 @@ func Exec_fdisk(com []string) {
 		case "-unit":
 			new_partition.Unit = spplited_command[1][0]
 		case "-path":
+			if ContainsQuotes(spplited_command[1]){
+				spplited_command[1] = DeleteQuotes(spplited_command[1])
+			}
 			if _, err := os.Stat(spplited_command[1]); !os.IsNotExist(err) {
 				new_partition.Path = spplited_command[1]
 			}else{

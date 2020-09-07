@@ -13,7 +13,7 @@ var current_pointer *avd
 var id_avd int
 var root avd
 
-func addDirectory(dir string, p_com bool)(e error){
+func AddDirectory(dir string, p_com bool)(e error){
 	if(root.Creation_date[0]==0){
 		root = createAVD("/", "")
 	}
@@ -30,7 +30,7 @@ func AllDirectories(dir string, p_com bool)(e error){
 	p_command = p_com 
 	directories := strings.Split(dir, "/")
 	current_pointer = &root
-	fmt.Println(directories)
+	//fmt.Println(directories)
 	for _, e := range directories{
 		if(e!=" " && e!=""){
 			err := createDirectory(e)
