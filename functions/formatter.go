@@ -11,26 +11,28 @@ import(
 
 func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_init int64){
 	disk_path := disk.Path + disk.Name
-	avd_struct := avd{}
+	avd_struct := avd_binary{}
 	dd_struct := dd{}
 	inode_struct := inode{}
 	block_struct := block{}
 	bit := bitacora{}
+	sb_struct := Super_Boot{}
 	//Calcular los tamanios de cada estructura
-
+	
 	avd_size := int64(unsafe.Sizeof(avd_struct))
 	dd_size := int64(unsafe.Sizeof(dd_struct))
 	inode_size := int64(unsafe.Sizeof(inode_struct))
 	block_size := int64(unsafe.Sizeof(block_struct))
 	bita_size := int64(unsafe.Sizeof(bit))
-	sb_size := int64(unsafe.Sizeof(sb))
+	sb_size := int64(unsafe.Sizeof(sb_struct))
+	fmt.Println("SUPER BOOT", sb_size)
 	//Numero de estructuras
 	struct_count := (partition_size - (2.0*sb_size)) / (27.0+ avd_size + dd_size +(5.0*inode_size +(20.0*block_size)+ bita_size)) 
 	//Calcular la cantidad de cada estructura
 	avd_count := struct_count
 	dd_count := struct_count
-	inode_count := 5*struct_count
-	block_count := 4*inode_count
+	inode_count := (5*struct_count)
+	block_count := (4*inode_count)
 	//bita_count := struct_count
 	
 	//Calcular los inicios de cada estructura dentro de la particion
@@ -75,11 +77,7 @@ func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_i
 	sb.Free_block_count,sb.Ffb_block =calcFree(disk_path,sb.Inp_bitmap_block, sb.Inp_block)	
 
 	sb.Magic_num = 201700377
-}
-
-
-func update_SB(u_sb Super_Boot, partition_init int64){
-	
+	printSB(sb, partition_init)
 }
 
 
@@ -91,10 +89,10 @@ func printSB(sb *Super_Boot, part_init int64){
 	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO:",sb.Directory_detail_count)
 	fmt.Println("CANTIDAD DE INODOS:",sb.Inodes_count)
 	fmt.Println("CANTIDAD DE BLOQUES DE DATOS:",sb.Block_count)
-	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL LIBRES:",sb.Virtual_tree_count)
-	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO LIBRES:",sb.Virtual_tree_count)
-	fmt.Println("CANTIDAD DE INODOS LIBRES:",sb.Virtual_tree_count)
-	fmt.Println("CANTIDAD DE BLOQUES DE DATOS LIBRES:",sb.Virtual_tree_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL LIBRES:",sb.Free_virtual_tree_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO LIBRES:",sb.Free_directory_detail_count)
+	fmt.Println("CANTIDAD DE INODOS LIBRES:",sb.Free_inodes_count)
+	fmt.Println("CANTIDAD DE BLOQUES DE DATOS LIBRES:",sb.Free_block_count)
 	fmt.Println("FECHA DE CREACION:", string(sb.Creation_date[:]))
 	fmt.Println("FECHA DE ULTIMA MODIFICACION:", string(sb.Last_mount_date[:]))
 	fmt.Println("CONTADOR DE MONTAJES DEL SISTEMA DE ARCHIVOS:", sb.Mount_count)
@@ -102,7 +100,7 @@ func printSB(sb *Super_Boot, part_init int64){
 	fmt.Println("INICIO DEL SUPER BLOQUE:",part_init)
 	fmt.Println("INICIO DEL BITMAP DEL AVD:",sb.Inp_bitmap_directory_tree )
 	fmt.Println("INICIO DEL AVD:",sb.Inp_directory_tree)
-	fmt.Println("INICIO DEL BITMAP DEL DD:",sb.Inp_directory_tree)
+	fmt.Println("INICIO DEL BITMAP DEL DD:",sb.Inp_bitmap_directory_detail)
 	fmt.Println("INICIO DEL DD:",sb.Inp_directory_detail)
 	fmt.Println("INICIO DEL BITMAP DEL INODO:",sb.Inp_bitmap_inode_table)
 	fmt.Println("INICIO DEL INODO:",sb.Inp_inode_table)
@@ -120,12 +118,12 @@ func printSB(sb *Super_Boot, part_init int64){
 	fmt.Println("PRIMER BIT DISPONIBLE DEL BITMAP DE INODE:", sb.Ffb_inode_table)
 	fmt.Println("PRIMER BIT DISPONIBLE DEL BITMAP DE BLOQUE:", sb.Ffb_block)
 	fmt.Println("-------------------------------------------------------------------------")
-	
 
 }
 
 func calcFree(file_path string,init, final int64) (free, first_free int64){
 	free =0
+	size := final-init
 	first :=false
 	first_free = int64(init)
 	file, err := os.Open(file_path)
@@ -134,7 +132,7 @@ func calcFree(file_path string,init, final int64) (free, first_free int64){
 		log.Fatal(err)
 	}
 	file.Seek(int64(init),0)
-	bits := GetData(file_path, int(final))
+	bits := GetData(file_path, int(final), int(size))
 	for z,e := range bits{
 		if(e==0){
 			free+=1
@@ -148,14 +146,13 @@ func calcFree(file_path string,init, final int64) (free, first_free int64){
 	return
 }
 
-func GetData(path string, final int)[]byte{
-
+func GetData(path string, final int, size int)[]byte{
 	file, err := os.Open(path)
 	defer file.Close() 
 	if err != nil { 
 		log.Fatal(err)
 	}
-	var m []byte
+	m := make([]byte, size)
 	data := leerBytes(file, final)
 	buffer := bytes.NewBuffer(data)
 	err = binary.Read(buffer, binary.BigEndian, &m)
@@ -166,7 +163,7 @@ func GetData(path string, final int)[]byte{
 }
 
 func leerBytes(file *os.File, number int) []byte {
-	bytes := make([]byte, number) //array de bytes
+	bytes := make([]byte, number)//array de bytes
 
 	_, err := file.Read(bytes) // Leido -> bytes
 	if err != nil {

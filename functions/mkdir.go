@@ -20,14 +20,17 @@ func Exec_mkdir(com [] string){
 			mkdir_command.P = true
 		}
 	}
-	if(GetPartition(mkdir_command.Id)){
+	if(getPartition(mkdir_command.Id)){
 		pth := mkdir_command.Path
+		sb := ReadSB(current_partition.Path, current_partition.Init)
 		if ContainsQuotes(mkdir_command.Path) {
 			pth = DeleteQuotes(mkdir_command.Path)
 		}
-		err := AddDirectory(pth, mkdir_command.P)
+		r := ReadAVD(current_partition.Path, sb.Inp_directory_tree)
+		err,result := AddDirectory(pth, mkdir_command.P, r,current_partition)
 		if(err==nil){
-			fmt.Println("********** DIRECTORY  " , pth, " CREATED CORRECTLY **********")
+			createTreeReport(result,current_partition)
+			fmt.Println(Content)
 		}else{
 			fmt.Println("********** AN ERROR OCCURRED WHEN TRYING TO CREATE DIRECTORY **********")
 		}
@@ -37,7 +40,7 @@ func Exec_mkdir(com [] string){
 
 }
 
-func GetPartition(identifier string)bool{
+func getPartition(identifier string)bool{
 	for _, e := range Partitions_m{
 		if(CompareBytes(identifier,  e.Identifier)){
 			current_partition = e

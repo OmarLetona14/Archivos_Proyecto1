@@ -4,33 +4,39 @@ import(
 	"strings"
 	"fmt"
 	"errors"
+	"unsafe"
 )
 
 var current_p Mounted_partition
 var current_sb Super_Boot
 var p_command bool
-var current_pointer *avd 
+var current_pointer *avd_binary
 var id_avd int
-var root avd
+var root avd_binary
 
-func AddDirectory(dir string, p_com bool)(e error){
+func AddDirectory(dir string, p_com bool, current_root avd_binary, p Mounted_partition)(e error, a avd_binary){
+	root = current_root
+	current_p = p
+	GetSB()
 	if(root.Creation_date[0]==0){
-		root = createAVD("/", "")
+		new_avd := WriteBinaryAVD("/", "")
+		root = new_avd
 	}
 	err := AllDirectories(dir, p_com)
 	if err!=nil {
-		return errors.New("*******************")
+		return errors.New("*******************"),root
 	}
-	//createTreeReport(&root)
-	return nil
+	fmt.Println(root)
+	ModifySB(p.Path, current_sb, p.Init, int64(p.Dsk.Size))
+	//s := ReadSB(p.Path, p.Init)
+	//printSB(&s, int64(p.Init))
+	return nil,root
 }
-
 
 func AllDirectories(dir string, p_com bool)(e error){
 	p_command = p_com 
 	directories := strings.Split(dir, "/")
 	current_pointer = &root
-	//fmt.Println(directories)
 	for _, e := range directories{
 		if(e!=" " && e!=""){
 			err := createDirectory(e)
@@ -46,25 +52,29 @@ func createDirectory(directory string)(e error){
 	comprobate, dir := searchSub(current_pointer, directory)//Comprueba si el subdirectorio existe dentro del directorio actual
 	if(comprobate){
 		//Si existe cambiamos de puntero
-		current_pointer = dir
+		current_pointer = &dir
 	}else{
 		//Si no existe lo creamos
 		if(p_command){
 			//Se crea el nuevo directorio
-			c := createAVD(directory,"")
+			c := WriteBinaryAVD(directory,"")
+			ModifySB(current_p.Path,current_sb, current_p.Init, int64(current_p.Dsk.Size))
 			//Lo agregamos al listado de subdirectorio del directorio en donde nos encontramos
 			i,space:= GetFreeIndex(current_pointer) //Comprobamos que haya espacio en el subdictorio, de no ser asi
 			//Se crea un nuevo directorio 
 			if(space){
-				current_pointer.Sub_directory_pointers[i] = &c
+				current_pointer.Sub_directory_pointers[i] = c.Id
 				//actualizamos el puntero
-				current_pointer = current_pointer.Sub_directory_pointers[i]
+				result := ReadAVD(current_p.Path, c.Id)
+				current_pointer = &result
 			}else{
-				nxt := createAVD(string(current_pointer.Directory_name[:]), "")
-				current_pointer.Avd_next = &nxt
-				current_pointer.Avd_next.Sub_directory_pointers[0] = &c
+				nxt := WriteBinaryAVD(string(current_pointer.Directory_name[:]), "")
+				current_pointer.Avd_next = nxt.Id
+				sub:=ReadAVD(current_p.Path, current_pointer.Avd_next)
+				sub.Sub_directory_pointers[0] = c.Id
 				//Actualizamos el puntero
-				current_pointer = current_pointer.Avd_next.Sub_directory_pointers[0]
+				result := ReadAVD(current_p.Path, c.Id)
+				current_pointer = &result
 			}
 		}else{
 			//Si el parametro p no esta espeficiado muestra un error
@@ -75,9 +85,10 @@ func createDirectory(directory string)(e error){
 }
 
 
-func GetFreeIndex(dir *avd)(int64, bool){
+
+func GetFreeIndex(dir *avd_binary)(int64, bool){
 	for i,e := range dir.Sub_directory_pointers{
-		if(e==nil){
+		if(e==0){
 			return int64(i), true
 		}
 	}
@@ -85,44 +96,41 @@ func GetFreeIndex(dir *avd)(int64, bool){
 }
 
 
-func searchSub(r* avd, dir_name string)(bool, *avd){
+func searchSub(r *avd_binary, dir_name string)(bool, avd_binary){
 	for _,e := range r.Sub_directory_pointers{
-		if(e!=nil){
-			e_name := string(e.Directory_name[:])
+		if(e!=0){
+			current_avd := ReadAVD(current_p.Path, e)
+			e_name := string(current_avd.Directory_name[:])
 			if(CompareBytes(dir_name, e_name)){
-				return true, e
+				return true, current_avd
 			}
 		}
 	}
-	if(r.Avd_next!=nil){
-		searchSub(r.Avd_next, dir_name)
+	if(r.Avd_next!=0){
+		avd_nxt := ReadAVD(current_p.Path, r.Avd_next)
+		searchSub(&avd_nxt, dir_name)
 	}
-	return false,nil
+	return false,avd_binary{}
 }
 
-func createAVD(directory_name string, proper string) avd{
-	v:=avd{}
-	var pointers [6] *avd
-	var ddetail dd
-	v.Id = id_avd
-	id_avd += 1
-	v.Creation_date = GetCurrentTime()
-	copy(v.Directory_name[:], directory_name)
-	v.Sub_directory_pointers = pointers
-	v.Directory_detail = &ddetail
-	copy(v.Proper[:], proper)
-	return v
+func WriteBinaryAVD(dir_name string, prop string)avd_binary{
+	init := current_sb.Ffb_directory_tree
+	bin := avd_binary{}
+	bin_size := unsafe.Sizeof(bin)
+	bin.Id = init
+	copy(bin.Directory_name[:], []byte(dir_name))
+	current_sb.Ffb_directory_tree = init+int64(bin_size)
+	bin.Creation_date = GetCurrentTime()
+	bin.Directory_detail = 0
+	bin.Avd_next = 0
+	fmt.Println("WRITING ", bin)
+	WriteAVD(current_p.Path, bin,bin.Id, int64(current_p.Dsk.Size))
+	avd_new := ReadAVD(current_p.Path, bin.Id)
+	fmt.Println("READING", avd_new)
+	return avd_new
 }
 
-func printTree(current *avd){
-	if(current!=nil){
-		fmt.Println(string(current.Directory_name[:]), "At position", current.Id)
-		for _,e := range current.Sub_directory_pointers{
-			printTree(e)
-		}
-	}
-}
 
 func GetSB(){
-	current_sb = ReadSB(current_p.Path+ current_p.Name, current_p.Init)
+	current_sb = ReadSB(current_p.Path, current_p.Init)
 }

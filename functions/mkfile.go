@@ -42,12 +42,19 @@ func Exec_mkfile(com [] string){
 			fmt.Println("Command unknow")
 		}
 	}
-	if(mkfile_command.P){
-		addDirectory()
+
+	//sb := ReadSB(partition.Path, partition.Init)
+	if(getCurrentPartition(mkfile_command.Id)){
+		
 	}
-	
 }
 
-func CreateDir(){
-
+func getCurrentPartition(identifier string)bool{
+	for _, e := range Partitions_m{
+		if(CompareBytes(identifier,  e.Identifier)){
+			partition = e
+			return true
+		}
+	}
+	return false
 }

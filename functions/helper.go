@@ -51,6 +51,16 @@ func CompareBytes(str1 string, str2 string)bool{
 	return false
 }
 
+func GetString(e []byte)string{
+	s := ""
+	for _,element := range e{
+		if(element!=0){
+			s += string(element)
+		}
+	}
+	return s
+}
+
 func Calc_filesize(unit string, size int, partition bool)int64{
 	if(unit=="" && !partition){
 		unit = "m"

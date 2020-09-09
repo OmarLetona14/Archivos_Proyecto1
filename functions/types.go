@@ -125,13 +125,13 @@ type Super_Boot struct{
 	Magic_num int64
 }
 
-type avd struct{
-	Id int
+type avd_binary struct{
+	Id int64
 	Creation_date [25]byte
 	Directory_name [25]byte
-	Sub_directory_pointers [6] *avd
-	Directory_detail *dd
-	Avd_next *avd 
+	Sub_directory_pointers [6] int64
+	Directory_detail int64
+	Avd_next int64
 	Proper [25]byte
 }
 
