@@ -20,8 +20,36 @@ func generateRandom() int8{
 }
 
 func Splitter(txt string) []string {
-	commands := strings.Split(txt, " ")
+	var commands []string
+	if(!strings.ContainsAny(txt, "\"")){
+		commands = strings.Split(txt, " ")
+	}else{
+		precommands := strings.Split(txt, " ")
+		commands = QuotesPath(precommands)
+	}
 	return commands
+}
+
+func QuotesPath(str []string)[]string{
+	pt := ""
+	for i,_ := range str{
+		if(strings.HasPrefix(str[i],"-path")){
+			nxt := 0
+			for !strings.HasSuffix(str[i+nxt], "\""){
+				if nxt!=0{
+					pt +=" "+ str[i+nxt]
+				}else{
+					pt += str[i+nxt]
+				}
+				str[i+nxt] = ""
+				nxt +=1
+			}
+			pt += " " + str[i+nxt]
+			str[i+nxt] = ""
+			str[i] = pt
+		}
+	}
+	return str
 }
 
 func DeleteQuotes(str string) (strQu string) {

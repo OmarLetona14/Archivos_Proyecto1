@@ -37,7 +37,8 @@ func Exec_mkdisk(com []string)  {
 	var new_disk Mkdisk_command
 	for _, element := range com {
 		spplited_command := strings.Split(element, Equalizer)
-		switch strings.ToLower(spplited_command[0]) {
+		trimmed := strings.TrimLeft(spplited_command[0], " ")
+		switch strings.ToLower(trimmed) {
 		case "-size":
 			i, err := strconv.Atoi(spplited_command[1])
 			if i > 0 && err==nil{
@@ -63,7 +64,7 @@ func Exec_mkdisk(com []string)  {
 		case "-unit":
 			new_disk.Unit = spplited_command[1]
 		default:
-			if spplited_command[0] != "mkdisk" {
+			if spplited_command[0] != "mkdisk" && spplited_command[0]!=""{
 				fmt.Println(spplited_command[0], "command unknow")
 			}
 		}

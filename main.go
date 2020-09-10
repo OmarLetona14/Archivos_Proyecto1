@@ -43,8 +43,6 @@ func execute_console(i string) {
 	}
 }
 
-
-
 func recognize_command(commands []string) {
 	switch strings.ToLower(commands[0]) {
 	case "mkdisk":
@@ -81,7 +79,9 @@ func recognize_command(commands []string) {
 	case "mkdir":
 		functions.Exec_mkdir(commands)
 	default:
-		fmt.Println("Not supported command! ")
+		if(strings.ToLower(commands[0])!=""){
+			fmt.Println("Not supported command! ")
+		}
 	}
 }
 
@@ -97,7 +97,6 @@ func ReadFile(file_name string) {
 	for scanner.Scan() {
 		if(scanner.Text()!= " "){
 			trimmed := functions.GetString([]byte(scanner.Text()))
-			fmt.Println("")
 			if !strings.HasPrefix(trimmed, "#"){
 				if !strings.HasSuffix(trimmed, "/*"){
 					if !mline {
