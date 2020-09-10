@@ -11,6 +11,8 @@ import (
 
 var equalizer string = "->"
 var m_command string = ""
+var line string = ""
+var mline bool =false
 
 func main(){
 	fmt.Println("Welcome to the console! (Press x to finish)")
@@ -94,12 +96,29 @@ func ReadFile(file_name string) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if(scanner.Text()!= " "){
-			if !strings.HasPrefix(scanner.Text(), "#"){
-				fmt.Println("Executing ", scanner.Text(), "... ")
-				execute_console(strings.TrimRight(scanner.Text(), " "))
+			trimmed := functions.GetString([]byte(scanner.Text()))
+			fmt.Println("")
+			if !strings.HasPrefix(trimmed, "#"){
+				if !strings.HasSuffix(trimmed, "/*"){
+					if !mline {
+						fmt.Println("Executing ", trimmed, "... ")
+						execute_console(strings.TrimRight(trimmed, " "))
+					}else{
+						line += trimmed
+						fmt.Println("Executing ", line, "... ")
+						execute_console(strings.TrimRight(line, " "))
+						mline = false
+					}
+				}else{
+					deleted := strings.TrimRight(trimmed, "/*")
+					line += deleted
+					mline = true
+				}
 			}else{
 				fmt.Println(scanner.Text())
 			}
+		}else{
+			fmt.Println("Empty file")
 		}
 	}
 	if err := scanner.Err(); err != nil {
