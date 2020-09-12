@@ -18,14 +18,13 @@ func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_i
 	bit := bitacora{}
 	sb_struct := Super_Boot{}
 	//Calcular los tamanios de cada estructura
-	
+	partition_init += 1
 	avd_size := int64(unsafe.Sizeof(avd_struct))
 	dd_size := int64(unsafe.Sizeof(dd_struct))
 	inode_size := int64(unsafe.Sizeof(inode_struct))
 	block_size := int64(unsafe.Sizeof(block_struct))
 	bita_size := int64(unsafe.Sizeof(bit))
 	sb_size := int64(unsafe.Sizeof(sb_struct))
-	fmt.Println("SUPER BOOT", sb_size)
 	//Numero de estructuras
 	struct_count := (partition_size - (2.0*sb_size)) / (27.0+ avd_size + dd_size +(5.0*inode_size +(20.0*block_size)+ bita_size)) 
 	//Calcular la cantidad de cada estructura
@@ -77,7 +76,6 @@ func Format(sb *Super_Boot, disk Mounted_disk, partition_size int64, partition_i
 	sb.Free_block_count,sb.Ffb_block =calcFree(disk_path,sb.Inp_bitmap_block, sb.Inp_block)	
 
 	sb.Magic_num = 201700377
-	printSB(sb, partition_init)
 }
 
 
@@ -85,11 +83,11 @@ func printSB(sb *Super_Boot, part_init int64){
 	//Inicio detalles generales
 	fmt.Println("DISK NAME", string(sb.Virtual_disk_name[:]))
 	//Cantidades
-	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL:",sb.Virtual_tree_count)
-	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO:",sb.Directory_detail_count)
-	fmt.Println("CANTIDAD DE INODOS:",sb.Inodes_count)
-	fmt.Println("CANTIDAD DE BLOQUES DE DATOS:",sb.Block_count)
-	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL LIBRES:",sb.Free_virtual_tree_count)
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL:", int(sb.Virtual_tree_count))
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO:",int(sb.Directory_detail_count))
+	fmt.Println("CANTIDAD DE INODOS:",int(sb.Inodes_count))
+	fmt.Println("CANTIDAD DE BLOQUES DE DATOS:",int(sb.Block_count))
+	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL ARBOL VIRTUAL LIBRES:",int(sb.Free_virtual_tree_count))
 	fmt.Println("CANTIDAD DE ESTRUCTURAS DEL DETALLE DE DIRECTORIO LIBRES:",sb.Free_directory_detail_count)
 	fmt.Println("CANTIDAD DE INODOS LIBRES:",sb.Free_inodes_count)
 	fmt.Println("CANTIDAD DE BLOQUES DE DATOS LIBRES:",sb.Free_block_count)
@@ -170,4 +168,13 @@ func leerBytes(file *os.File, number int) []byte {
 		log.Fatal(err)
 	}
 	return bytes
+}
+
+func WriteBits(){
+
+}
+
+func CountBits(sb Super_Boot)(res int64){
+	res= sb.Inp_bitmap_directory_tree - sb.Ffb_directory_tree
+	return
 }

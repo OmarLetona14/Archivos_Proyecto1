@@ -26,7 +26,7 @@ func Exec_mount(com [] string){
 			}
 		case "-name":
 			//Primero verificamos si la particion no esta montada
-			v, _ := VerifyMountedPartitionByName(spplited_command[1])
+			v, _ := VerifyMountedPartitionByName(spplited_command[1], new_mount.Path)
 			if(!v){
 				//Obtenemos el MBR del disco especificado
 				dsik := ReadMBR(new_mount.Path)
@@ -123,11 +123,14 @@ func GetIdentifier(elements int) string {
 	return string(97+elements)
 }
 
-func VerifyMountedPartitionByName(name string)(bool, Mounted_partition){
+func VerifyMountedPartitionByName(name string, dsk_name string)(bool, Mounted_partition){
 	for _,element := range Partitions_m{
 		if(CompareBytes(name, element.Name)){
-			fmt.Println("Partition",name, "Is already mounted", element.Name)
-			return true, element
+			path := element.Dsk.Path+element.Dsk.Name
+			if(CompareBytes(dsk_name, path)){
+				fmt.Println("Partition",name, "Is already mounted", element.Name)
+				return true, element
+			}
 		}
 	}
 	return false, Mounted_partition{}
@@ -147,6 +150,15 @@ func GetDiskByPath(path string) Mounted_disk{
 	for _, element := range Disks_m{
 		if(CompareBytes(path, element.Path)){
 			return element
+		}
+	}
+	return Mounted_disk{}
+}
+
+func GetDiskByIdentifier(id string)Mounted_disk{
+	for _,e :=range Partitions_m{
+		if(CompareBytes(id, e.Identifier)){
+			return e.Dsk
 		}
 	}
 	return Mounted_disk{}

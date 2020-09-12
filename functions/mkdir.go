@@ -11,7 +11,8 @@ func Exec_mkdir(com [] string){
 	var mkdir_command Mkdir_command
 	for _, e := range com{
 		spplited_command := strings.Split(e, Equalizer)
-		switch strings.ToLower(spplited_command[0]){
+		trimmed := strings.TrimLeft(spplited_command[0]," ")
+		switch strings.ToLower(trimmed){
 		case "-id":
 			mkdir_command.Id = spplited_command[1]
 		case "-path":
@@ -27,10 +28,9 @@ func Exec_mkdir(com [] string){
 			pth = DeleteQuotes(mkdir_command.Path)
 		}
 		r := ReadAVD(current_partition.Path, sb.Inp_directory_tree)
-		err,result := AddDirectory(pth, mkdir_command.P, r,current_partition)
+		err,_ := AddDirectory(pth, mkdir_command.P, r,current_partition)
 		if(err==nil){
-			createTreeReport(result,current_partition)
-			fmt.Println(Content)
+			
 		}else{
 			fmt.Println("********** AN ERROR OCCURRED WHEN TRYING TO CREATE DIRECTORY **********")
 		}

@@ -2,7 +2,7 @@ package functions
 
 import(
 	"strings"
-	"fmt"
+	//"fmt"
 	"errors"
 	"unsafe"
 )
@@ -26,7 +26,6 @@ func AddDirectory(dir string, p_com bool, current_root avd_binary, p Mounted_par
 	if err!=nil {
 		return errors.New("*******************"),root
 	}
-	fmt.Println(root)
 	ModifySB(p.Path, current_sb, p.Init, int64(p.Dsk.Size))
 	//s := ReadSB(p.Path, p.Init)
 	//printSB(&s, int64(p.Init))
@@ -66,6 +65,8 @@ func createDirectory(directory string)(e error){
 				current_pointer.Sub_directory_pointers[i] = c.Id
 				//actualizamos el puntero
 				result := ReadAVD(current_p.Path, c.Id)
+				p_cont := *current_pointer
+				ModifyAVD(current_p.Path,p_cont,current_pointer.Id, int64(current_p.Dsk.Size))
 				current_pointer = &result
 			}else{
 				nxt := WriteBinaryAVD(string(current_pointer.Directory_name[:]), "")
@@ -74,6 +75,8 @@ func createDirectory(directory string)(e error){
 				sub.Sub_directory_pointers[0] = c.Id
 				//Actualizamos el puntero
 				result := ReadAVD(current_p.Path, c.Id)
+				p_cont := *current_pointer
+				ModifyAVD(current_p.Path,p_cont,current_pointer.Id, int64(current_p.Dsk.Size))
 				current_pointer = &result
 			}
 		}else{
@@ -114,19 +117,22 @@ func searchSub(r *avd_binary, dir_name string)(bool, avd_binary){
 }
 
 func WriteBinaryAVD(dir_name string, prop string)avd_binary{
-	init := current_sb.Ffb_directory_tree
 	bin := avd_binary{}
 	bin_size := unsafe.Sizeof(bin)
+	init := CountBits(current_sb)*int64(bin_size) + current_sb.Inp_directory_tree
 	bin.Id = init
 	copy(bin.Directory_name[:], []byte(dir_name))
-	current_sb.Ffb_directory_tree = init+int64(bin_size)
 	bin.Creation_date = GetCurrentTime()
 	bin.Directory_detail = 0
 	bin.Avd_next = 0
-	fmt.Println("WRITING ", bin)
+	//fmt.Println("WRITING ", bin)
 	WriteAVD(current_p.Path, bin,bin.Id, int64(current_p.Dsk.Size))
 	avd_new := ReadAVD(current_p.Path, bin.Id)
-	fmt.Println("READING", avd_new)
+	ModifyBitmap(current_p.Path, current_sb.Ffb_directory_tree, int64(current_p.Dsk.Size))
+	current_sb.Ffb_directory_tree += 1
+	current_sb.Free_virtual_tree_count -= 1
+	ModifySB(current_p.Path, current_sb,current_p.Init, int64(current_p.Dsk.Size))
+	//fmt.Println("READING", avd_new)
 	return avd_new
 }
 

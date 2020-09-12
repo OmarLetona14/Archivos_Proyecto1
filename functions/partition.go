@@ -54,6 +54,7 @@ func Exec_fdisk(com []string) {
 	}
 	if(new_partition.Path!="" && new_partition.Size!=0 && new_partition.Name!="" || new_partition.Delete){
 		PartitionProcess(new_partition)
+		//PrintMBR(ReadMBR(new_partition.Path))
 	}else{
 		fmt.Println("Not enough arguments")
 	}
@@ -161,6 +162,11 @@ func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 				fmt.Println("There one extended partition already")
 			}
 			return false
+		}else if(cm.Type == 'l'){
+			if(e!=1){
+				fmt.Println("You need to create an extended partition before creating a logical partition")
+				return false
+			}
 		}
 	}else{
 		fmt.Println("Cannot create more partitions, theres 4 already")
@@ -177,7 +183,8 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 		if(mbr_table.Partitions[i].Status == '0'){			
 			//SE VERIFICAN LOS VALORES DE INICIO
 			if(i==0){
-				str_mbr := unsafe.Sizeof(mbr_table)
+				n := mbr{}
+				str_mbr := unsafe.Sizeof(n)
 				mbr_table.Partitions[i].Start = int64(str_mbr)
 				//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
 				if(part_size>mbr_table.Partitions[i+1].Start && mbr_table.Partitions[i+1].Start!=0){
@@ -220,7 +227,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 	return
 }
 
-func calcPart(parti [4] Partition)(int, int, int){
+func calcPart(parti [40] Partition)(int, int, int){
 	primary := 0
 	free:=0
 	extended := 0

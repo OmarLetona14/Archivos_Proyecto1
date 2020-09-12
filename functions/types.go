@@ -5,7 +5,7 @@ type mbr struct{
 	Size int64
 	Time[25] byte
 	Disk_signature int8
-	Partitions[4] Partition
+	Partitions[40] Partition
 }
 
 
@@ -59,6 +59,13 @@ type Mount_command struct{
 
 type Unmount_command struct{
 	List_id [20]string
+}
+
+type repo_command struct{
+	Name string
+	Path string
+	Id string
+	Route string
 }
 
 type Mkfile_command struct{

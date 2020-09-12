@@ -10,7 +10,7 @@ import (
 )
 
 func WriteSuperB(file_path string, super Super_Boot, init int64, final_bit int64){
-	file, err := os.Create(file_path)
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -34,13 +34,13 @@ func WriteSuperB(file_path string, super Super_Boot, init int64, final_bit int64
 
 
 func WriteAVD(file_path string, n_avd avd_binary, init int64, final_bit int64){
-	file, err := os.Create(file_path)
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
 		fmt.Println("Cannot write the file")
 	}
-	//Escribir el superboot en el principio de la particion
+		//Escribir el superboot en el principio de la particion
 	file.Seek(init, 0)
 	ss := &n_avd
 	var mbr_buf bytes.Buffer
@@ -58,21 +58,21 @@ func WriteAVD(file_path string, n_avd avd_binary, init int64, final_bit int64){
 
 
 func ModifyMBR(file_path string, rec mbr){
-	file, err := os.Create(file_path)
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
 		fmt.Println("Cannot write the file")
 	}
 	ss := &rec
-	
+	file.Seek(0,0)
 	var mbr_buf bytes.Buffer
 	binary.Write(&mbr_buf, binary.BigEndian, ss)
 	WriteBytes(file, mbr_buf.Bytes())
 
 	var otro int8 = 0
 	s := &otro
-	file.Seek(rec.Size, 0)
+	file.Seek(rec.Size-1, 0)
 	//Escribimos un 0 al final del archivo.
 	var binario2 bytes.Buffer
 	binary.Write(&binario2, binary.BigEndian, s)
@@ -82,7 +82,7 @@ func ModifyMBR(file_path string, rec mbr){
 
 
 func ModifySB(file_path string, rec Super_Boot, part_init int64, final int64){
-	file, err := os.Create(file_path)
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -90,6 +90,55 @@ func ModifySB(file_path string, rec Super_Boot, part_init int64, final int64){
 	}
 	ss := &rec
 	file.Seek(part_init, 0)
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+
+	var otro int8 = 0
+	s := &otro
+	file.Seek(final, 0)
+	
+	//Escribimos un 0 al final del archivo.
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func ModifyAVD(file_path string, a avd_binary, part_init int64, final int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println("Cannot write the file")
+	}
+	ss := &a
+	file.Seek(part_init, 0)
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+
+	var otro int8 = 0
+	s := &otro
+	file.Seek(final, 0)
+	
+	//Escribimos un 0 al final del archivo.
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func ModifyBitmap(file_path string, bitmap_init int64, final int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println("Cannot write the file")
+	}
+	var otro1 int8 = 1
+	ss := &otro1
+	file.Seek(bitmap_init, 0)
 	var mbr_buf bytes.Buffer
 	binary.Write(&mbr_buf, binary.BigEndian, ss)
 	WriteBytes(file, mbr_buf.Bytes())
@@ -115,6 +164,7 @@ func WriteFile(file_path string, file_size int64) {
 	var otro int8 = 0
 	s := &otro
 	//Escribimos un 0 en el inicio del archivo.
+	file.Seek(0, 0)
 	var binario bytes.Buffer
 	binary.Write(&binario, binary.BigEndian, s)
 	WriteBytes(file, binario.Bytes())
@@ -124,7 +174,7 @@ func WriteFile(file_path string, file_size int64) {
 	var binario2 bytes.Buffer
 	binary.Write(&binario2, binary.BigEndian, s)
 	WriteBytes(file, binario2.Bytes())
-	file.Seek(0, 0) // nos posicionamos en el inicio del archivo.
+	file.Seek(0, 0)// nos posicionamos en el inicio del archivo.
 	//MBR vacio
 	var mbrs mbr
 	//TAMANIO DEL MBR
@@ -139,8 +189,8 @@ func WriteFile(file_path string, file_size int64) {
 	}
 	s1 := &mbrs
 	//Escribimos struct.
-	var binario3 bytes.Buffer
-	binary.Write(&binario3, binary.BigEndian, s1)
+	binario3 := bytes.NewBuffer([]byte{})
+	binary.Write(binario3, binary.BigEndian, s1)
 	WriteBytes(file, binario3.Bytes())
 	//REGRESAMOS AL PRINCIPIO DEL ARCHIVO
 	file.Seek(0, 0)
@@ -153,8 +203,10 @@ func ReadMBR(file_path string)(m mbr) {
 	if err != nil { //validar que no sea nulo.
 		log.Fatal(err)
 	}
+	file.Seek(0,0)
+	mr := mbr{}
 	//Obtenemos el tamanio del mbr
-	var size int = int(unsafe.Sizeof(m))
+	var size int = int(unsafe.Sizeof(mr))
 	//Lee la cantidad de <size> bytes del archivo
 	data := ReadBytes(file, size)
 	//Convierte la data en un buffer,necesario para
@@ -232,25 +284,4 @@ func ReadBytes(file *os.File, number int) []byte {
 		log.Fatal(err)
 	}
 	return bytes
-}
-
-//FUNCION PARA IMPRIMIR EL CONTENIDO DEL MBR
-func PrintMBR(m mbr){
-	fmt.Println("Disk size", m.Size)
-	myString := string(m.Time[:])
-	fmt.Println("Disk created at", myString)
-	fmt.Println("Disk signature", m.Disk_signature)
-	for i := 0; i < len(m.Partitions); i++ {
-		par := m.Partitions[i]
-		fmt.Println("------------------------------------------------------------------")
-		fmt.Println("Partition", i)
-		fmt.Println("Partition status", string(par.Status))
-		fmt.Println("Partition type", string(par.Type))
-		fmt.Println("Partition fit", string(par.Fit[:]))
-		fmt.Println("Partition start",par.Start)
-		fmt.Println("Partition size",par.Size)
-		parName := string(par.Name[:])
-		fmt.Println("Partition name",parName)
-		fmt.Println("------------------------------------------------------------------")
-	}
 }

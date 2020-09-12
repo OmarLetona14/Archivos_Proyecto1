@@ -6,6 +6,7 @@ import(
 	"strings"
 	"runtime"
 	"fmt"
+	"os/exec"
 )
 
 func GetCurrentTime()(time_array[25] byte){
@@ -121,4 +122,26 @@ func GetPath(p string)(string, string){
 	name := sp[len(sp)-1]
 	path := strings.TrimRight(p, name)
 	return path, name
+}
+
+func GetWSpace(r string)string{
+	var str string = ""
+	if(strings.HasPrefix(r," ")){
+		str = strings.TrimRight(r, " ")
+	}else if(strings.HasSuffix(r, " ")){
+		str = strings.TrimLeft(r, " ")
+	}else{
+		str = r
+	}
+	return str
+}
+
+func execDot(input string, output string){
+	cmd := exec.Command("dot","-Tpng", input, "-o", output)
+	err:= cmd.Run()
+	if(err!=nil){
+		fmt.Println("**** ERROR: CANNOT CREATE REPORT ******")
+	}else{
+		fmt.Println("Report created correctly")
+	}
 }

@@ -44,7 +44,14 @@ func execute_console(i string) {
 }
 
 func recognize_command(commands []string) {
-	switch strings.ToLower(commands[0]) {
+	var trimmed string = ""
+	if(strings.ContainsAny(commands[0], " ")){
+		leftTrim := strings.TrimRight(commands[0], " ")
+		trimmed = strings.TrimLeft(leftTrim, " ")
+	}else{
+		trimmed = commands[0]
+	}
+	switch strings.ToLower(trimmed) {
 	case "mkdisk":
 		functions.Exec_mkdisk(commands)
 	case "exec":
@@ -68,6 +75,10 @@ func recognize_command(commands []string) {
 		functions.Exec_unmount(commands)
 	case "mkfs":
 		functions.Exec_mkfs(commands)
+	case "rep":
+		functions.Exec_rep(commands)
+	case "disk":
+		//PrintMBR(ReadMBR())
 	case "mount":
 		if(len(commands)>=2){
 			functions.Exec_mount(commands)

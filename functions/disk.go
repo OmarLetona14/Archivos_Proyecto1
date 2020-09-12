@@ -12,8 +12,13 @@ var Equalizer string = "->"
 
 func Exec_mrdisk(com []string) {
 	splitted_command := strings.Split(com[1], Equalizer)
-	if splitted_command[0] == "-path" {
-		file_name := splitted_command[1]
+	trimmed := strings.TrimLeft(splitted_command[0], " ")
+	if strings.ContainsAny(trimmed,"-path") {
+		trimmed_path := splitted_command[1]
+		if ContainsQuotes(trimmed_path){
+			trimmed_path = DeleteQuotes(trimmed_path)
+		}
+		file_name := trimmed_path
 		deleteFile(file_name)
 	} else {
 		fmt.Println(splitted_command[0], "command unknow")
@@ -71,6 +76,7 @@ func Exec_mkdisk(com []string)  {
 	}
 	if(new_disk.Path!="" && new_disk.Size != 0 && new_disk.Name!=""){
 		WriteFile(new_disk.Path+new_disk.Name, Calc_filesize(new_disk.Unit, new_disk.Size,false)) 
+		
 	}else{
 		fmt.Println("Too few arguments")
 	}
@@ -84,4 +90,25 @@ func GetPartitionByName(m mbr, name string) Partition{
 		}
 	}
 	return Partition{}
+}
+
+func PrintMBR(m mbr){
+	if(m.Size != 0){
+		fmt.Println("Tamanio", m.Size)
+		fmt.Println("Fecha de creacion", GetString(m.Time[:]))
+		fmt.Println("Disk signature", m.Disk_signature)
+		for _,e := range m.Partitions{
+			if(e.Status!='0' && e.Type!='0'){
+				fmt.Println("----------------------------------------")
+				fmt.Println("Name", GetString(e.Name[:]))
+				fmt.Println("Status", string(e.Status))
+				fmt.Println("Type", string(e.Type))
+				fmt.Println("Fit", GetString(e.Fit[:]))
+				fmt.Println("Start", strconv.Itoa(int(e.Start)))
+				fmt.Println("Size", strconv.Itoa(int(e.Size)))
+			}
+		}	
+	}else{
+		fmt.Println("Empty disk")
+	}
 }
