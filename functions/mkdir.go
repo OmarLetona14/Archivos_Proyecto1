@@ -19,6 +19,14 @@ func Exec_mkdir(com [] string){
 			mkdir_command.Path = spplited_command[1]
 		case "-p":
 			mkdir_command.P = true
+		default:
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(trimmed)
+			}else{
+				if(trimmed!="mkdir" && trimmed!="" && trimmed!=" "){
+					fmt.Println("Command unknow")
+				}
+			}
 		}
 	}
 	if(getPartition(mkdir_command.Id)){

@@ -6,6 +6,7 @@ import(
 	"strconv"
 	"unsafe"
 	"os"
+	//"bytes"
 	"bufio"
 )
 
@@ -13,7 +14,8 @@ func Exec_fdisk(com []string) {
 	var new_partition Mfdisk_command
 	for _, element := range com {
 		spplited_command := strings.Split(element, Equalizer)
-		switch strings.ToLower(spplited_command[0]) {
+		trimmed := strings.TrimLeft(spplited_command[0], " ")
+		switch strings.ToLower(trimmed) {
 		case "-size":
 			i, _ := strconv.Atoi(spplited_command[1])
 			if i > 0 {
@@ -47,8 +49,10 @@ func Exec_fdisk(com []string) {
 		case "-add":
 			new_partition.Add = true
 		default:
-			if spplited_command[0] != "fdisk" {
-				fmt.Println(spplited_command[0], "command unknow")
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(element)
+			}else if trimmed != "fdisk" {
+				fmt.Println(trimmed, "command unknow")
 			}
 		}
 	}
@@ -92,7 +96,11 @@ func PartitionProcess(cm Mfdisk_command){
 			if(createPart(&mbr_table, cm)){//Modificamos los datos del mbr
 				ModifyMBR(cm.Path, mbr_table) //Sobreescribimos en el archivo binario la nueva tabla mbr
 				//PrintMBR(ReadMBR(cm.Path))
-			} 
+			} else{
+				fmt.Println("Error:Cannot create partition, internal error")
+			}
+		}else{
+			fmt.Println("Error: Cannot create partition, values error")
 		}
 	}else{
 		fmt.Println("Incorrect combination")
@@ -155,17 +163,22 @@ func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 	if cm.Type == 0{
 		cm.Type = 'p'
 	}
-	e,_,f := calcPart(mbr_table.Partitions) //OBTENEMOS E= PARTITIONES EXTENDIDAS, F= PARTICIONES LIBRES
-	if(f>=1){ //SE VERIFICA SI EXISTEN PARTICIONES LIBRES
-		if(cm.Type=='e'){ 
+	e,p,l := calcPart(mbr_table.Partitions) //OBTENEMOS E= PARTITIONES EXTENDIDAS, F= PARTICIONES LIBRES
+	if(!(l+p>4)){ //SE VERIFICA SI EXISTEN PARTICIONES LIBRES
+		var type_b byte = cm.Type
+		if(type_b=='e'){ 
 			if(e==1){//VERIFICAMOS SI EXISTE YA UNA PARTICION EXTENDIDA
 				fmt.Println("There one extended partition already")
+				return false
+			}else{
+				return true
 			}
-			return false
-		}else if(cm.Type == 'l'){
-			if(e!=1){
+		}else if(type_b=='l'){
+			if(e==0){
 				fmt.Println("You need to create an extended partition before creating a logical partition")
 				return false
+			}else{
+				return true
 			}
 		}
 	}else{
@@ -179,7 +192,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 	created=false
 	part_size := Calc_filesize(string(cm.Unit),int(cm.Size), true)
 	i:=0
-	for !created && !(i>=len(mbr_table.Partitions)){
+	for !created && !(i>len(mbr_table.Partitions)){
 		if(mbr_table.Partitions[i].Status == '0'){			
 			//SE VERIFICAN LOS VALORES DE INICIO
 			if(i==0){
@@ -197,7 +210,7 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 				//SE CALCULA INICIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION ANTERIOR + TAMANIO DE LA PARTICION QUE SE QUIERE CREAR
 				verifyValue := mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size + part_size
 				strt :=  mbr_table.Partitions[i-1].Start + mbr_table.Partitions[i-1].Size 
-				if(i!=3){
+				if(i!=39){
 					if(strt+part_size>mbr_table.Partitions[i+1].Start && mbr_table.Partitions[i+1].Start!=0){
 						//SE VERIFICA QUE EN CASO DE TENER UNA PARTICION DELANTE DE ESTA HAYA ESPACIO SUFICIENTE
 						fmt.Println("There is not enough space ")
@@ -229,16 +242,16 @@ func createPart(mbr_table* mbr, cm Mfdisk_command) (created bool){
 
 func calcPart(parti [40] Partition)(int, int, int){
 	primary := 0
-	free:=0
+	logical:=0
 	extended := 0
 	for i:=0;i<len(parti);i++ {
 		if(parti[i].Type == 'p'){
 			primary += 1
 		}else if(parti[i].Type == 'e'){
 			extended +=1
-		}else{
-			free +=1
+		}else if(parti[i].Type == 'l'){
+			logical +=1
 		}
 	}
-	return extended, primary, free
+	return extended, primary, logical
 }

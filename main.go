@@ -34,12 +34,12 @@ func main(){
 }
 
 func execute_console(i string) {
-	if(!strings.HasSuffix(i,"/*")){
+	if(!strings.HasSuffix(i,"\\*")){
 		m_command += functions.Get_text(i)
 		recognize_command(functions.Splitter(m_command))
 		m_command = ""
 	}else{
-		m_command += strings.TrimRight(i, "/*")
+		m_command += strings.TrimRight(i, "\\*")
 	}
 }
 
@@ -109,7 +109,7 @@ func ReadFile(file_name string) {
 		if(scanner.Text()!= " "){
 			trimmed := functions.GetString([]byte(scanner.Text()))
 			if !strings.HasPrefix(trimmed, "#"){
-				if !strings.HasSuffix(trimmed, "/*"){
+				if !strings.HasSuffix(trimmed, "\\*"){
 					if !mline {
 						fmt.Println("Executing ", trimmed, "... ")
 						execute_console(strings.TrimRight(trimmed, " "))
@@ -120,7 +120,7 @@ func ReadFile(file_name string) {
 						mline = false
 					}
 				}else{
-					deleted := strings.TrimRight(trimmed, "/*")
+					deleted := strings.TrimRight(trimmed, "\\*")
 					line += deleted
 					mline = true
 				}

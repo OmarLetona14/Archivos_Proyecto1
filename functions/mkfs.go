@@ -9,7 +9,8 @@ func Exec_mkfs(com [] string){
 	var mkfs_command Mkfs_command
 	for _, element :=range com{
 		spplited_command := strings.Split(element, Equalizer)
-		switch strings.ToLower(spplited_command[0]){
+		trimmed:= strings.TrimLeft(spplited_command[0], " ")
+		switch strings.ToLower(trimmed){
 		case "-id":
 			mkfs_command.Identifier = spplited_command[1]
 		case "-type":
@@ -19,7 +20,13 @@ func Exec_mkfs(com [] string){
 		case "unit":
 			mkfs_command.Unit = spplited_command[1][0]
 		default:
-			fmt.Println("Unrecognize command")
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(element)
+			}else{
+				if trimmed!="mkfs" && trimmed!=""{
+					fmt.Println("Unrecognize command")
+				} 
+			}
 		}
 	}
 	if(mkfs_command.Identifier!=""){

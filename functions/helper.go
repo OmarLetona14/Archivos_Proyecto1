@@ -16,8 +16,12 @@ func GetCurrentTime()(time_array[25] byte){
 	return
 }
 
-func generateRandom() int8{
-	return int8(rand.Int())
+func generateRandom() (rnd int8){
+	rnd = int8(rand.Int())
+	if rnd>0{
+		return
+	}
+	return generateRandom()
 }
 
 func Splitter(txt string) []string {
@@ -33,21 +37,28 @@ func Splitter(txt string) []string {
 
 func QuotesPath(str []string)[]string{
 	pt := ""
+	overflowing:=false
 	for i,_ := range str{
 		if(strings.HasPrefix(str[i],"-path")){
 			nxt := 0
-			for !strings.HasSuffix(str[i+nxt], "\""){
+			for (!strings.HasSuffix(str[i+nxt], "\"") && !overflowing){
 				if nxt!=0{
 					pt +=" "+ str[i+nxt]
 				}else{
 					pt += str[i+nxt]
 				}
 				str[i+nxt] = ""
-				nxt +=1
+				if !(i+nxt>=len(str)){
+					nxt +=1
+				}else{
+					overflowing =true
+				}
 			}
-			pt += " " + str[i+nxt]
-			str[i+nxt] = ""
-			str[i] = pt
+			if !(i+nxt>=len(str)){
+				pt += " " + str[i+nxt]
+				str[i+nxt] = ""
+				str[i] = pt
+			}
 		}
 	}
 	return str
@@ -140,8 +151,13 @@ func execDot(input string, output string){
 	cmd := exec.Command("dot","-Tpng", input, "-o", output)
 	err:= cmd.Run()
 	if(err!=nil){
-		fmt.Println("**** ERROR: CANNOT CREATE REPORT ******")
+		fmt.Println("**** ERROR: CANNOT CREATE REPORT ******", err)
 	}else{
 		fmt.Println("Report created correctly")
 	}
+}
+
+func CalcPercentage(total int64,parcial int64)(per int){
+	per = int((100*parcial)/total)
+	return
 }

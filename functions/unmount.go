@@ -12,10 +12,11 @@ func Exec_unmount(com [] string){
 	var unmount_command Unmount_command
 	for _,element := range com{
 		spplited_command := strings.Split(element, Equalizer)
+		trimmed:= strings.TrimLeft(spplited_command[0], " ")
 		rex :=`-id\d+`
-		mtch,_ := regexp.MatchString(rex,spplited_command[0])
+		mtch,_ := regexp.MatchString(rex,trimmed)
 		if mtch{
-			getNumbers := strings.Split(spplited_command[0], "-id")
+			getNumbers := strings.Split(trimmed, "-id")
 			index,err := strconv.Atoi(getNumbers[1])
 			if(err==nil){
 				unmount_command.List_id[index] = spplited_command[1]
@@ -23,7 +24,10 @@ func Exec_unmount(com [] string){
 				fmt.Println("An error ocurred when trying to unmount partition")
 			}
 		}else{
-			if(spplited_command[0]!=" " || spplited_command[0]!="" ||spplited_command[0]!="\n"||
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(trimmed)
+			}
+			if(trimmed!=" " || trimmed!="" ||trimmed!="\n"||
 			spplited_command[0]!="\t"){
 				fmt.Println("unrecognize command")
 			}

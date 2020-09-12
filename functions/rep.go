@@ -45,7 +45,11 @@ func Report(r repo_command){
 			mb:=ReadMBR(mounted_partition.Path)
 			createMbrReport(mb, r.Path)
 		case "disk":
+			mb:=ReadMBR(mounted_partition.Path)
+			createDiskReport(mb,mounted_partition ,r.Path)
 		case "sb":
+			sb := ReadSB(mounted_partition.Path, mounted_partition.Init)
+			createSbReport(sb,mounted_partition ,r.Path)
 		case "bm_arbdir":
 		case "bm_detdir":
 		case "bm_inode":

@@ -13,8 +13,7 @@ func WriteSuperB(file_path string, super Super_Boot, init int64, final_bit int64
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 	//Escribir el superboot en el principio de la particion
 	file.Seek(init, 0)
@@ -37,8 +36,7 @@ func WriteAVD(file_path string, n_avd avd_binary, init int64, final_bit int64){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 		//Escribir el superboot en el principio de la particion
 	file.Seek(init, 0)
@@ -61,8 +59,7 @@ func ModifyMBR(file_path string, rec mbr){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 	ss := &rec
 	file.Seek(0,0)
@@ -85,8 +82,7 @@ func ModifySB(file_path string, rec Super_Boot, part_init int64, final int64){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 	ss := &rec
 	file.Seek(part_init, 0)
@@ -109,8 +105,7 @@ func ModifyAVD(file_path string, a avd_binary, part_init int64, final int64){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 	ss := &a
 	file.Seek(part_init, 0)
@@ -133,8 +128,7 @@ func ModifyBitmap(file_path string, bitmap_init int64, final int64){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
-		fmt.Println("Cannot write the file")
+		fmt.Println("Cannot write the file", err)
 	}
 	var otro1 int8 = 1
 	ss := &otro1
@@ -158,7 +152,7 @@ func WriteFile(file_path string, file_size int64) {
 	file, err := os.Create(file_path)
 	defer file.Close()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Cannot create file", err)
 	}
 	//ESTE CERO SERA PUESTO EN EL PRINCIPIO Y EL FINAL DE ARCHIVO
 	var otro int8 = 0
@@ -215,7 +209,7 @@ func ReadMBR(file_path string)(m mbr) {
 	//Decodificamos y guardamos en la variable m
 	err = binary.Read(buffer, binary.BigEndian, &m)
 	if err != nil {
-		log.Fatal("binary.Read failed", err)
+		fmt.Println("binary.Read failed", err)
 	}
 	file.Seek(0,0)
 	return
@@ -239,7 +233,7 @@ func ReadSB(file_path string, part_init int64)(m Super_Boot) {
 	//Decodificamos y guardamos en la variable m
 	err = binary.Read(buffer, binary.BigEndian, &m)
 	if err != nil {
-		log.Fatal("binary.Read failed", err)
+		fmt.Println("binary.Read failed", err)
 	}
 	file.Seek(0,0)
 	return
@@ -263,7 +257,7 @@ func ReadAVD(file_path string, part_init int64)(m avd_binary) {
 	//Decodificamos y guardamos en la variable m
 	err = binary.Read(buffer, binary.BigEndian, &m)
 	if err != nil {
-		log.Fatal("binary.Read failed", err)
+		fmt.Println("binary.Read failed", err)
 	}
 	file.Seek(0,0)
 	return

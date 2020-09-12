@@ -57,6 +57,7 @@ func createDirectory(directory string)(e error){
 		if(p_command){
 			//Se crea el nuevo directorio
 			c := WriteBinaryAVD(directory,"")
+			current_sb.Last_mount_date = GetCurrentTime()
 			ModifySB(current_p.Path,current_sb, current_p.Init, int64(current_p.Dsk.Size))
 			//Lo agregamos al listado de subdirectorio del directorio en donde nos encontramos
 			i,space:= GetFreeIndex(current_pointer) //Comprobamos que haya espacio en el subdictorio, de no ser asi
@@ -131,6 +132,7 @@ func WriteBinaryAVD(dir_name string, prop string)avd_binary{
 	ModifyBitmap(current_p.Path, current_sb.Ffb_directory_tree, int64(current_p.Dsk.Size))
 	current_sb.Ffb_directory_tree += 1
 	current_sb.Free_virtual_tree_count -= 1
+	current_sb.Last_mount_date = GetCurrentTime()
 	ModifySB(current_p.Path, current_sb,current_p.Init, int64(current_p.Dsk.Size))
 	//fmt.Println("READING", avd_new)
 	return avd_new

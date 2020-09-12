@@ -5,6 +5,7 @@ import(
 	"os"
 	"bufio"
 	"log"
+	"unsafe"
 	"fmt"
 )
 
@@ -49,6 +50,20 @@ func createSbReport(r Super_Boot,p Mounted_partition, path string){
 		fmt.Print("Empty table")
 	}
 	nm:="SB" + p.Identifier +"_Report"
+	createDotFile(path + nm + ".dot")
+	execDot(path + nm + ".dot", path + nm + ".png")
+}
+
+func createDiskReport(r mbr,p Mounted_partition, path string){
+	curr_partition = p
+	if(r.Time[0]!=0){
+		Content += "digraph G{ \n"
+		diskReport(r)
+		Content+="}"
+	}else{
+		fmt.Print("Empty table")
+	}
+	nm:="Disk" + p.Identifier +"_Report"
 	createDotFile(path + nm + ".dot")
 	execDot(path + nm + ".dot", path + nm + ".png")
 }
@@ -111,22 +126,65 @@ func GetContent(r avd_binary){
 	}
 }
 
+
+func diskReport(r mbr){
+	total_disk := r.Size
+	Content += "label=<" + "\n"
+	Content += "<table border='1' cellborder='1'>" + "\n"
+	mbr_per := CalcPercentage(r.Size, int64(unsafe.Sizeof(r)))
+	total_disk -= int64(unsafe.Sizeof(r))
+	Content += "<tr><td>MBR "+ strconv.Itoa(int(mbr_per)) + "%</td>" + "\n"
+	for _,e :=range r.Partitions{
+		if e.Status!='0'{
+			if e.Type=='p' {
+				Content += "<td>Primaria " +strconv.Itoa(CalcPercentage(r.Size, e.Size))  + "%</td>"+ "\n"
+				total_disk -= e.Size
+			}else if e.Type == 'e'{
+				_,_, logical := calcPart(r.Partitions)
+				Content += "<td>" +"\n"
+				Content += "<table border='1' cellborder='1'>" + "\n"
+				Content += "<tr><td colspan=\"" + strconv.Itoa(logical*3) + "\">Extendida " +strconv.Itoa(CalcPercentage(r.Size, e.Size)) + "%</td></tr>"+ "\n"
+				Content += "<tr>"+ "\n"
+				for _,e := range r.Partitions{
+					if(e.Status!='0'){
+						if(e.Type=='l'){
+							eb :=ebr{}
+							ebr_size := unsafe.Sizeof(eb)
+							Content += "<td>EBR "+ strconv.Itoa(CalcPercentage(r.Size, int64(ebr_size))) + "%</td>" + "\n"
+							Content += "<td>Logica " + strconv.Itoa(CalcPercentage(r.Size, e.Size))  + "%</td>"+ "\n"
+						}
+					}
+				}
+				Content += "</tr>"+ "\n"
+				Content += "</table>"+ "\n"
+				Content += "</td>" +"\n"
+				total_disk -= e.Size
+			}
+		}
+	}
+	if(total_disk!=0){
+		Content += "<td>Libre " + strconv.Itoa(CalcPercentage(r.Size, total_disk))+ "%</td>"+ "\n"
+	}
+	Content += "</tr>" + "\n"
+	Content += "</table>"+ "\n"
+	Content += ">"
+}
+
 func SbReport(s Super_Boot){
-	Content += "tbl [" + "\n"
 	Content += "label=<" + "\n"
 	Content += "<table border='1' cellborder='1'>" + "\n"
 	Content += "<tr><td>Nombre</td><td>Valor</td></tr>" + "\n"
 	Content += "<tr><td>Nombre del disco</td><td>"+GetString(s.Virtual_disk_name[:])+ "</td></tr>" + "\n"
 	Content += "<tr><td>Cantidad de estructuras en el arbol del directorio</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de estructuras en el detalle de directorio</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de inodos</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de bloques de datos</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de estructuras en el arbol del directorio libres</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de estructuras en el detalle de directorio libres</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de inodos libres</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Cantidad de bloques de datos libres</td><td>"+strconv.Itoa(int(s.Virtual_tree_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de estructuras en el detalle de directorio</td><td>"+strconv.Itoa(int(s.Directory_detail_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de inodos</td><td>"+strconv.Itoa(int(s.Inodes_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de bloques de datos</td><td>"+strconv.Itoa(int(s.Block_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de estructuras en el arbol del directorio libres</td><td>"+strconv.Itoa(int(s.Free_virtual_tree_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de estructuras en el detalle de directorio libres</td><td>"+strconv.Itoa(int(s.Free_directory_detail_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de inodos libres</td><td>"+strconv.Itoa(int(s.Free_inodes_count))+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Cantidad de bloques de datos libres</td><td>"+strconv.Itoa(int(s.Free_block_count))+ "</td></tr>"+ "\n"
 	Content += "<tr><td>Fecha y hora de creacion</td><td>"+GetString(s.Creation_date[:])+ "</td></tr>"+ "\n"
-	Content += "<tr><td>Fecha y hora de ultima moficacion</td><td>"+GetString(s.Last_mount_date[:])+ "</td></tr>"+ "\n"
+	Content += "<tr><td>Fecha y hora de ultima modificacion</td><td>"+GetString(s.Last_mount_date[:])+ "</td></tr>"+ "\n"
 	Content += "<tr><td>Contador de montajes</td><td>"+strconv.Itoa(int(s.Mount_count))+ "</td></tr>"+ "\n"
 	Content += "<tr><td>Apuntador al inicio del bitmap de avd</td><td>"+strconv.Itoa(int(s.Inp_bitmap_directory_tree))+ "</td></tr>"+ "\n"
 	Content += "<tr><td>Apuntador al inicio del avd</td><td>"+strconv.Itoa(int(s.Inp_directory_tree))+ "</td></tr>"+ "\n"
@@ -147,12 +205,11 @@ func SbReport(s Super_Boot){
 	Content += "<tr><td>Primer bit libre del bitmap de bloques</td><td>"+strconv.Itoa(int(s.Ffb_block))+ "</td></tr>"+ "\n"
 	Content += "<tr><td>Numero magico</td><td>"+strconv.Itoa(int(s.Magic_num))+ "</td></tr>"+ "\n"
 	Content += "</table>"+ "\n"
-	Content += ">];"
+	Content += ">"
 }
 
 
 func MbrReport(m mbr){
-	Content += "tbl [" + "\n"
 	Content += "label=<" + "\n"
 	Content += "<table border='1' cellborder='1'>"+ "\n"
 	Content += "<tr><td>Nombre</td><td>Valor</td></tr>"+ "\n"
@@ -170,5 +227,5 @@ func MbrReport(m mbr){
 		}
 	}
 	Content += "</table>"+ "\n"
-	Content += ">];"
+	Content += ">"
 }

@@ -21,7 +21,12 @@ func Exec_mrdisk(com []string) {
 		file_name := trimmed_path
 		deleteFile(file_name)
 	} else {
-		fmt.Println(splitted_command[0], "command unknow")
+		if(strings.HasPrefix(trimmed,"#")){
+			fmt.Println(trimmed)
+		}else{
+			fmt.Println(trimmed, "command unknow")
+		}
+		
 	}
 }
 
@@ -56,7 +61,11 @@ func Exec_mkdisk(com []string)  {
 				spplited_command[1] = DeleteQuotes(spplited_command[1])
 			}
 			if _, err := os.Stat(spplited_command[1]); os.IsNotExist(err) {
-				os.MkdirAll(spplited_command[1], os.ModePerm)
+				err := os.MkdirAll(spplited_command[1], 0777)
+				if(err!=nil){
+					fmt.Println("Error creating route")
+					fmt.Println(err)
+				}
 			}
 			new_disk.Path = spplited_command[1]
 		case "-name":
@@ -69,8 +78,11 @@ func Exec_mkdisk(com []string)  {
 		case "-unit":
 			new_disk.Unit = spplited_command[1]
 		default:
-			if spplited_command[0] != "mkdisk" && spplited_command[0]!=""{
-				fmt.Println(spplited_command[0], "command unknow")
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(trimmed)
+			}
+			if strings.ToLower(trimmed) != "mkdisk" && trimmed!=""{
+				fmt.Println(trimmed, "command unknow")
 			}
 		}
 	}

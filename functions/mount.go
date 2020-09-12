@@ -13,7 +13,8 @@ func Exec_mount(com [] string){
 	var unmounted_partition Partition
 	for _,element := range com {
 		spplited_command := strings.Split(element, Equalizer)
-		switch  strings.ToLower(spplited_command[0]) {
+		trimmed := strings.TrimLeft(spplited_command[0], " ")
+		switch  strings.ToLower(trimmed) {
 		case "-path":
 			if ContainsQuotes(spplited_command[1]){
 				spplited_command[1] = DeleteQuotes(spplited_command[1])
@@ -46,6 +47,14 @@ func Exec_mount(com [] string){
 				}
 			}else{
 				fmt.Println("This partition is already mounted")
+			}
+		default:
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(element)
+			}else{
+				if trimmed!="mount" && trimmed!=""{
+					fmt.Println("Command unknow")
+				}
 			}
 		}
 	}
