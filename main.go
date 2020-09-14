@@ -110,7 +110,7 @@ func ReadFile(file_name string) {
 	for scanner.Scan() {
 		if(scanner.Text()!= " "){
 			trimmed := functions.GetString([]byte(scanner.Text()))
-			if(trimmed!="" || trimmed!=" " || trimmed!="\n"){
+			if(trimmed!="" && trimmed!=" " && trimmed!="\n"){
 				if !strings.HasPrefix(trimmed, "#"){
 					if !strings.HasSuffix(trimmed, "\\*"){
 						if !mline {
