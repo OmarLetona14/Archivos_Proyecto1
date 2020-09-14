@@ -64,6 +64,35 @@ func QuotesPath(str []string)[]string{
 	return str
 }
 
+func QuotesContent(str []string)[]string{
+	pt := ""
+	overflowing:=false
+	for i,_ := range str{
+		if(strings.HasPrefix(str[i],"-cont")){
+			nxt := 0
+			for (!strings.HasSuffix(str[i+nxt], "\"") && !overflowing){
+				if nxt!=0{
+					pt +=" "+ str[i+nxt]
+				}else{
+					pt += str[i+nxt]
+				}
+				str[i+nxt] = ""
+				if !(i+nxt>=len(str)){
+					nxt +=1
+				}else{
+					overflowing =true
+				}
+			}
+			if !(i+nxt>=len(str)){
+				pt += " " + str[i+nxt]
+				str[i+nxt] = ""
+				str[i] = pt
+			}
+		}
+	}
+	return str
+}
+
 func DeleteQuotes(str string) (strQu string) {
 	quLeft := strings.TrimLeft(str, "\"")
 	strQu = strings.TrimRight(quLeft, "\"")

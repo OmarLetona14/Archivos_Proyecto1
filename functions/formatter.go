@@ -174,7 +174,22 @@ func WriteBits(){
 
 }
 
-func CountBits(sb Super_Boot)(res int64){
+func CountBitsAVD(sb Super_Boot)(res int64){
 	res= sb.Inp_bitmap_directory_tree - sb.Ffb_directory_tree
 	return
+}
+
+func CountBitsDD(sb Super_Boot)(res int64){
+	res= sb.Inp_directory_detail - sb.Ffb_directory_detail
+	return
+}
+
+func CountBitsInode(sb Super_Boot)(res int64){
+	res =sb.Inp_inode_table - sb.Ffb_inode_table
+	return 
+}
+
+func CountBitsBlock(sb Super_Boot)(res int64){
+	res =sb.Inp_block - sb.Ffb_block
+	return 
 }

@@ -54,6 +54,93 @@ func WriteAVD(file_path string, n_avd avd_binary, init int64, final_bit int64){
 	file.Seek(0,0)
 }
 
+func WriteDD(file_path string, n_dd dd, dd_init int64, final_bit int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		fmt.Println("Cannot write the file", err)
+	}
+		//Escribir el superboot en el principio de la particion
+	file.Seek(dd_init, 0)
+	ss := &n_dd
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	file.Seek(final_bit,0)
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func WriteNode(file_path string, n_node inode, inode_init int64, final_bit int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		fmt.Println("Cannot write the file", err)
+	}
+		//Escribir el superboot en el principio de la particion
+	file.Seek(inode_init, 0)
+	ss := &n_node
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	file.Seek(final_bit,0)
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func WriteInode(file_path string, n_inode inode, inode_init int64, final_bit int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		fmt.Println("Cannot write the file", err)
+	}
+		//Escribir el superboot en el principio de la particion
+	file.Seek(inode_init, 0)
+	ss := &n_inode
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	file.Seek(final_bit,0)
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func WriteBlock(file_path string, n_block block, block_init int64, final_bit int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		fmt.Println("Cannot write the file", err)
+	}
+		//Escribir el superboot en el principio de la particion
+	file.Seek(block_init, 0)
+	ss := &n_block
+	var mbr_buf bytes.Buffer
+	binary.Write(&mbr_buf, binary.BigEndian, ss)
+	WriteBytes(file, mbr_buf.Bytes())
+	//Escribimos un 0 al final del archivo.
+	file.Seek(final_bit,0)
+	var otro int8 = 0
+	s := &otro
+	var binario2 bytes.Buffer
+	binary.Write(&binario2, binary.BigEndian, s)
+	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
 
 func ModifyMBR(file_path string, rec mbr){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
@@ -124,15 +211,14 @@ func ModifyAVD(file_path string, a avd_binary, part_init int64, final int64){
 	file.Seek(0,0)
 }
 
-func ModifyBitmap(file_path string, bitmap_init int64, final int64){
+func ModifyDD(file_path string, d dd, dd_init int64, final int64){
 	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
 	defer file.Close()
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-	var otro1 int8 = 1
-	ss := &otro1
-	file.Seek(bitmap_init, 0)
+	ss := &d
+	file.Seek(dd_init, 0)
 	var mbr_buf bytes.Buffer
 	binary.Write(&mbr_buf, binary.BigEndian, ss)
 	WriteBytes(file, mbr_buf.Bytes())
@@ -145,6 +231,38 @@ func ModifyBitmap(file_path string, bitmap_init int64, final int64){
 	var binario2 bytes.Buffer
 	binary.Write(&binario2, binary.BigEndian, s)
 	WriteBytes(file, binario2.Bytes())
+	file.Seek(0,0)
+}
+
+func ModifyBitmap(file_path string, bitmap_init int64, final int64){
+	file, err := os.OpenFile(file_path, os.O_RDWR, 0664)
+	defer file.Close()
+	if err != nil {
+		fmt.Println("Cannot write the file", err)
+	}
+	
+	var otro1 int8 = 1
+	size := unsafe.Sizeof(otro1)
+	total := bitmap_init + otro1
+	if(!(total>=final)){
+		ss := &otro1
+		file.Seek(bitmap_init, 0)
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+
+		var otro int8 = 0
+		s := &otro
+		file.Seek(final, 0)
+		
+		//Escribimos un 0 al final del archivo.
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("File end, cannot read")
+	}
+	
 	file.Seek(0,0)
 }
 
@@ -239,6 +357,7 @@ func ReadSB(file_path string, part_init int64)(m Super_Boot) {
 	return
 }
 
+
 func ReadAVD(file_path string, part_init int64)(m avd_binary) {
 	//Abrimos/creamos un archivo.
 	file, err := os.Open(file_path)
@@ -263,6 +382,101 @@ func ReadAVD(file_path string, part_init int64)(m avd_binary) {
 	return
 }
 
+func ReadInode(file_path string, part_init int64)(m inode) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal("Path " ,file_path, err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del AVD
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		fmt.Println("binary.Read failed", err)
+	}
+	file.Seek(0,0)
+	return
+}
+
+func ReadBlock(file_path string, part_init int64)(m block) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal("Path " ,file_path, err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del AVD
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		fmt.Println("binary.Read failed", err)
+	}
+	file.Seek(0,0)
+	return
+}
+
+func ReadDD(file_path string, part_init int64)(m dd) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal("Path " ,file_path, err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del AVD
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		fmt.Println("binary.Read failed", err)
+	}
+	file.Seek(0,0)
+	return
+}
+
+func ReadNode(file_path string, part_init int64)(m inode) {
+	//Abrimos/creamos un archivo.
+	file, err := os.Open(file_path)
+	defer file.Close() 
+	if err != nil { //validar que no sea nulo.
+		log.Fatal("Path " ,file_path, err)
+	}
+	file.Seek(part_init, 0)
+	//Obtenemos el tamanio del AVD
+	var size int = int(unsafe.Sizeof(m))
+	//Lee la cantidad de <size> bytes del archivo
+	data := ReadBytes(file, size)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(data)
+	//Decodificamos y guardamos en la variable m
+	err = binary.Read(buffer, binary.BigEndian, &m)
+	if err != nil {
+		fmt.Println("binary.Read failed", err)
+	}
+	file.Seek(0,0)
+	return
+}
 
 func WriteBytes(file *os.File, bytes []byte) {
 	_, err := file.Write(bytes)

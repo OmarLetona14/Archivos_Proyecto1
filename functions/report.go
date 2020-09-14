@@ -145,13 +145,14 @@ func diskReport(r mbr){
 				Content += "<table border='1' cellborder='1'>" + "\n"
 				Content += "<tr><td colspan=\"" + strconv.Itoa(logical*3) + "\">Extendida " +strconv.Itoa(CalcPercentage(r.Size, e.Size)) + "%</td></tr>"+ "\n"
 				Content += "<tr>"+ "\n"
-				for _,e := range r.Partitions{
+				for _,element := range r.Partitions{
 					if(e.Status!='0'){
 						if(e.Type=='l'){
 							eb :=ebr{}
 							ebr_size := unsafe.Sizeof(eb)
-							Content += "<td>EBR "+ strconv.Itoa(CalcPercentage(r.Size, int64(ebr_size))) + "%</td>" + "\n"
-							Content += "<td>Logica " + strconv.Itoa(CalcPercentage(r.Size, e.Size))  + "%</td>"+ "\n"
+							Content += "<td>EBR "+ strconv.Itoa(CalcPercentage(e.Size, int64(ebr_size))) + "%</td>" + "\n"
+							Content += "<td>Logica " + strconv.Itoa(CalcPercentage(e.Size, element.Size))  + "%</td>"+ "\n"
+							
 						}
 					}
 				}

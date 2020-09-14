@@ -136,20 +136,21 @@ type avd_binary struct{
 	Id int64
 	Creation_date [25]byte
 	Directory_name [25]byte
-	Sub_directory_pointers [6] int64
+	Sub_directory_pointers [5] int64
 	Directory_detail int64
 	Avd_next int64
 	Proper [25]byte
 }
 
 type dd struct{
+	Id int64
 	Table [5] inode_register
-	Next_pointer *dd
+	Next_pointer int64
 }
 
 type inode_register struct{
 	File_name [25] byte
-	Inode_pointer *inode
+	Inode_pointer int64
 	Creation_date [25] byte
 	Modification_date [25]byte
 }
@@ -160,10 +161,11 @@ type inode struct{
 	File_size int64
 	Block_count int64
 	Block_array [4] block
-	Indirect_pointer *inode
+	Indirect_pointer int64
 }
 
 type block struct{
+	Id int64
 	Data [25] byte
 }
 

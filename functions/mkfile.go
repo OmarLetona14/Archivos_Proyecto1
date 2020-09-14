@@ -8,16 +8,13 @@ import(
 
 var partition Mounted_partition
 
-func createFile(){
-
-
-}
 
 func Exec_mkfile(com [] string){
 	var mkfile_command Mkfile_command
-	for _, e := range com{
-		spplited_command := strings.Split(e, Equalizer)
-		switch strings.ToLower(spplited_command[0]){
+	for _, element := range com{
+		spplited_command := strings.Split(element, Equalizer)
+		trimmed := strings.TrimLeft(spplited_command[0], " ")
+		switch strings.ToLower(trimmed){
 		case "-id":
 			mkfile_command.Id = spplited_command[1]
 		case "-path":
@@ -38,23 +35,28 @@ func Exec_mkfile(com [] string){
 			}else{
 				fmt.Println("Error on size parameter!")
 			}
+		case "-cont":
+			mkfile_command.Cont = spplited_command[1]
 		default:
-			fmt.Println("Command unknow")
+			if(strings.HasPrefix(trimmed,"#")){
+				fmt.Println(element)
+			}
+			if(strings.ToLower(trimmed)!="mkfile" && trimmed!="" && trimmed!=" "){
+				fmt.Println("Command unknow",trimmed)
+			}
 		}
 	}
-
 	//sb := ReadSB(partition.Path, partition.Init)
-	if(getCurrentPartition(mkfile_command.Id)){
-		
+	ver, part := VerifyMountedPartition(mkfile_command.Id)
+	if(ver){
+		partition = part
+		CreateFile(mkfile_command,part)
+	}else{
+		fmt.Println("Partition doesnt exists")
 	}
 }
 
-func getCurrentPartition(identifier string)bool{
-	for _, e := range Partitions_m{
-		if(CompareBytes(identifier,  e.Identifier)){
-			partition = e
-			return true
-		}
-	}
-	return false
+func CreateFile(commad Mkfile_command, p Mounted_partition){
+	sb_b := ReadSB(p.Path, p.Init)
+	CreateSystemFile(commad,commad.P, sb_b, p)
 }

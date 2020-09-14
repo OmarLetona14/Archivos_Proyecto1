@@ -89,6 +89,8 @@ func recognize_command(commands []string) {
 		}
 	case "mkdir":
 		functions.Exec_mkdir(commands)
+	case "mkfile":
+		functions.Exec_mkfile(commands)
 	default:
 		if(strings.ToLower(commands[0])!=""){
 			fmt.Println("Not supported command! ")

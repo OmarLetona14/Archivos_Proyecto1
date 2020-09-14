@@ -79,9 +79,9 @@ func Exec_mkdisk(com []string)  {
 			new_disk.Unit = spplited_command[1]
 		default:
 			if(strings.HasPrefix(trimmed,"#")){
-				fmt.Println(trimmed)
+				fmt.Println(element)
 			}
-			if strings.ToLower(trimmed) != "mkdisk" && trimmed!=""{
+		 	if strings.ToLower(trimmed) != "mkdisk" && trimmed!=""{
 				fmt.Println(trimmed, "command unknow")
 			}
 		}

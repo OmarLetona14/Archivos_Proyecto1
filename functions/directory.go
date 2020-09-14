@@ -88,6 +88,15 @@ func createDirectory(directory string)(e error){
 	return nil
 }
 
+func GetDirectory(p bool, path_c string, rot avd_binary, par Mounted_partition) avd_binary{
+	if(p){
+		err,_ := AddDirectory(path_c, p,rot, par)
+		if err!=nil{
+			return avd_binary{}
+		}
+	}
+	return *current_pointer
+}
 
 
 func GetFreeIndex(dir *avd_binary)(int64, bool){
@@ -120,11 +129,12 @@ func searchSub(r *avd_binary, dir_name string)(bool, avd_binary){
 func WriteBinaryAVD(dir_name string, prop string)avd_binary{
 	bin := avd_binary{}
 	bin_size := unsafe.Sizeof(bin)
-	init := CountBits(current_sb)*int64(bin_size) + current_sb.Inp_directory_tree
+	init := CountBitsAVD(current_sb)*int64(bin_size) + current_sb.Inp_directory_tree
 	bin.Id = init
 	copy(bin.Directory_name[:], []byte(dir_name))
 	bin.Creation_date = GetCurrentTime()
-	bin.Directory_detail = 0
+	dd_dir := CreateDD(current_p)
+	bin.Directory_detail = dd_dir.Id
 	bin.Avd_next = 0
 	//fmt.Println("WRITING ", bin)
 	WriteAVD(current_p.Path, bin,bin.Id, int64(current_p.Dsk.Size))
@@ -137,6 +147,7 @@ func WriteBinaryAVD(dir_name string, prop string)avd_binary{
 	//fmt.Println("READING", avd_new)
 	return avd_new
 }
+
 
 
 func GetSB(){
