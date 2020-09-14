@@ -96,8 +96,8 @@ func GetMountIdentifier(path string)string{
 	for i, element := range Disks_m{
 		absolute_path := element.Path + element.Name
 		if(absolute_path==path){
-			id := "vd" + element.Identifier + strconv.Itoa(element.Count_mounted)
 			element.Count_mounted += 1
+			id := "vd" + element.Identifier + strconv.Itoa(element.Count_mounted)
 			Disks_m[i] = element
 			return id
 		}

@@ -14,14 +14,15 @@ func Exec_rep(com []string) {
 		spplited_command := strings.Split(e, Equalizer)
 		sp := strings.TrimLeft(spplited_command[0], " ")
 		switch (strings.ToLower(sp)){
-		case "-nombre":
+		case "-name":
 			rep.Name = spplited_command[1]
 		case "-path":
 			if ContainsQuotes(spplited_command[1]){
 				spplited_command[1] = DeleteQuotes(spplited_command[1])
 			}
-			if _, err := os.Stat(spplited_command[1]); os.IsNotExist(err) {
-				os.MkdirAll(spplited_command[1], os.ModePerm)
+			ph, _ := ReturnName(spplited_command[1])
+			if _, err := os.Stat(ph); os.IsNotExist(err) {
+				os.MkdirAll(ph, os.ModePerm)
 			}
 			rep.Path = spplited_command[1]
 		case "-id":

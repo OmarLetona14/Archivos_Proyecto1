@@ -190,3 +190,31 @@ func CalcPercentage(total int64,parcial int64)(per int){
 	per = int((100*parcial)/total)
 	return
 }
+
+func GetPathWODot(s string)string{
+	pth, name := ReturnName(s)
+	name_dot := ReturnWODot(name)
+	return pth + name_dot
+}
+
+func ReturnWODot(s string)string{
+	spl := strings.Split(s, ".")
+	return spl[0]
+}
+
+func ReturnName(s string)(string, string){
+	path := ""
+	spl := strings.Split(s, "/")
+	sp_size := len(spl)
+	for i, e := range spl{
+		if(i!=(sp_size-1)){
+			if(e!=""){
+				path+="/" + e
+			}
+		}else{
+			path +="/"
+			return path, spl[sp_size-1]
+		}
+	}
+	return "",""
+}

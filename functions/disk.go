@@ -4,6 +4,7 @@ import(
 	"strings"
 	"fmt"
 	"os"
+	"bufio"
 	"strconv"
 )
 
@@ -19,7 +20,16 @@ func Exec_mrdisk(com []string) {
 			trimmed_path = DeleteQuotes(trimmed_path)
 		}
 		file_name := trimmed_path
-		deleteFile(file_name)
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Are you sure of deleting this disk? [s/n]")
+		input, _ := reader.ReadString('\n')
+		input = Get_text(input)
+		if(strings.ToLower(input) == "s"){
+			deleteFile(file_name)
+		}else{
+			fmt.Println("Disk doesnt deleted")
+		}
+		
 	} else {
 		if(strings.HasPrefix(trimmed,"#")){
 			fmt.Println(trimmed)

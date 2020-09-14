@@ -110,24 +110,26 @@ func ReadFile(file_name string) {
 	for scanner.Scan() {
 		if(scanner.Text()!= " "){
 			trimmed := functions.GetString([]byte(scanner.Text()))
-			if !strings.HasPrefix(trimmed, "#"){
-				if !strings.HasSuffix(trimmed, "\\*"){
-					if !mline {
-						fmt.Println("Executing ", trimmed, "... ")
-						execute_console(strings.TrimRight(trimmed, " "))
+			if(trimmed!="" || trimmed!=" " || trimmed!="\n"){
+				if !strings.HasPrefix(trimmed, "#"){
+					if !strings.HasSuffix(trimmed, "\\*"){
+						if !mline {
+							fmt.Println("Executing ", trimmed, "... ")
+							execute_console(strings.TrimRight(trimmed, " "))
+						}else{
+							line += trimmed
+							fmt.Println("Executing ", line, "... ")
+							execute_console(strings.TrimRight(line, " "))
+							mline = false
+						}
 					}else{
-						line += trimmed
-						fmt.Println("Executing ", line, "... ")
-						execute_console(strings.TrimRight(line, " "))
-						mline = false
+						deleted := strings.TrimRight(trimmed, "\\*")
+						line += deleted
+						mline = true
 					}
 				}else{
-					deleted := strings.TrimRight(trimmed, "\\*")
-					line += deleted
-					mline = true
+					fmt.Println(scanner.Text())
 				}
-			}else{
-				fmt.Println(scanner.Text())
 			}
 		}else{
 			fmt.Println("Empty file")

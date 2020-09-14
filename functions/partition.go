@@ -163,8 +163,8 @@ func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 	if cm.Type == 0{
 		cm.Type = 'p'
 	}
-	e,p,l := calcPart(mbr_table.Partitions) //OBTENEMOS E= PARTITIONES EXTENDIDAS, F= PARTICIONES LIBRES
-	if(!(l+p>4)){ //SE VERIFICA SI EXISTEN PARTICIONES LIBRES
+	e,p,_ := calcPart(mbr_table.Partitions) //OBTENEMOS E= PARTITIONES EXTENDIDAS, F= PARTICIONES LIBRES
+	if(e+p<4){ //SE VERIFICA SI EXISTEN PARTICIONES LIBRES
 		var type_b byte = cm.Type
 		if(type_b=='e'){ 
 			if(e==1){//VERIFICAMOS SI EXISTE YA UNA PARTICION EXTENDIDA
@@ -182,8 +182,12 @@ func verifyDefaultValues(cm *Mfdisk_command, mbr_table mbr)(Part_error bool){
 			}
 		}
 	}else{
-		fmt.Println("Cannot create more partitions, theres 4 already")
-		return false
+		if((cm.Type=='l' || cm.Type=='L')){
+			return true
+		}else{
+			fmt.Println("Cannot create more partitions, theres 4 already")
+			return false
+		}
 	}
 	return true
 }

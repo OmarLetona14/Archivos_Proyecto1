@@ -15,20 +15,27 @@ func WriteSuperB(file_path string, super Super_Boot, init int64, final_bit int64
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-	//Escribir el superboot en el principio de la particion
-	file.Seek(init, 0)
-	ss := &super
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	super_size := unsafe.Sizeof(super)
+	tota_size := int64(super_size) + init
+	if(tota_size<final_bit){
+		file.Seek(init, 0)
+		ss := &super
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
+	//Escribir el superboot en el principio de la particion
+	
 }
 
 
@@ -38,19 +45,24 @@ func WriteAVD(file_path string, n_avd avd_binary, init int64, final_bit int64){
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-		//Escribir el superboot en el principio de la particion
-	file.Seek(init, 0)
-	ss := &n_avd
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	avd_size := unsafe.Sizeof(n_avd)
+	total_size:= int64(avd_size) + init
+	if(total_size<final_bit){
+		file.Seek(init, 0)
+		ss := &n_avd
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())	
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
 }
 
@@ -60,19 +72,25 @@ func WriteDD(file_path string, n_dd dd, dd_init int64, final_bit int64){
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
+	dd_size := unsafe.Sizeof(n_dd)
+	total_size := int64(dd_size) + dd_init
 		//Escribir el superboot en el principio de la particion
-	file.Seek(dd_init, 0)
-	ss := &n_dd
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	if(total_size<final_bit){
+		file.Seek(dd_init, 0)
+		ss := &n_dd
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
 }
 
@@ -82,19 +100,24 @@ func WriteNode(file_path string, n_node inode, inode_init int64, final_bit int64
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-		//Escribir el superboot en el principio de la particion
-	file.Seek(inode_init, 0)
-	ss := &n_node
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	node_size := unsafe.Sizeof(n_node)
+	total_size := int64(node_size) + inode_init
+	if(total_size<final_bit){
+		file.Seek(inode_init, 0)
+		ss := &n_node
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
 }
 
@@ -104,19 +127,24 @@ func WriteInode(file_path string, n_inode inode, inode_init int64, final_bit int
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-		//Escribir el superboot en el principio de la particion
-	file.Seek(inode_init, 0)
-	ss := &n_inode
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	node_size := unsafe.Sizeof(n_inode)
+	total_size := int64(node_size) + inode_init
+	if(total_size<final_bit){
+		file.Seek(inode_init, 0)
+		ss := &n_inode
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
 }
 
@@ -126,19 +154,24 @@ func WriteBlock(file_path string, n_block block, block_init int64, final_bit int
 	if err != nil {
 		fmt.Println("Cannot write the file", err)
 	}
-		//Escribir el superboot en el principio de la particion
-	file.Seek(block_init, 0)
-	ss := &n_block
-	var mbr_buf bytes.Buffer
-	binary.Write(&mbr_buf, binary.BigEndian, ss)
-	WriteBytes(file, mbr_buf.Bytes())
-	//Escribimos un 0 al final del archivo.
-	file.Seek(final_bit,0)
-	var otro int8 = 0
-	s := &otro
-	var binario2 bytes.Buffer
-	binary.Write(&binario2, binary.BigEndian, s)
-	WriteBytes(file, binario2.Bytes())
+	block_size :=  unsafe.Sizeof(n_block)
+	total_size := int64(block_size) + block_init
+	if(total_size<final_bit){
+		file.Seek(block_init, 0)
+		ss := &n_block
+		var mbr_buf bytes.Buffer
+		binary.Write(&mbr_buf, binary.BigEndian, ss)
+		WriteBytes(file, mbr_buf.Bytes())
+		//Escribimos un 0 al final del archivo.
+		file.Seek(final_bit,0)
+		var otro int8 = 0
+		s := &otro
+		var binario2 bytes.Buffer
+		binary.Write(&binario2, binary.BigEndian, s)
+		WriteBytes(file, binario2.Bytes())
+	}else{
+		fmt.Println("There is not enough space on disk")
+	}
 	file.Seek(0,0)
 }
 
@@ -243,7 +276,7 @@ func ModifyBitmap(file_path string, bitmap_init int64, final int64){
 	
 	var otro1 int8 = 1
 	size := unsafe.Sizeof(otro1)
-	total := bitmap_init + otro1
+	total := int64(bitmap_init) + int64(size)
 	if(!(total>=final)){
 		ss := &otro1
 		file.Seek(bitmap_init, 0)
@@ -315,6 +348,7 @@ func ReadMBR(file_path string)(m mbr) {
 	if err != nil { //validar que no sea nulo.
 		log.Fatal(err)
 	}
+
 	file.Seek(0,0)
 	mr := mbr{}
 	//Obtenemos el tamanio del mbr

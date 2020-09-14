@@ -35,9 +35,9 @@ func createTreeReport(r avd_binary,p Mounted_partition, path string){
 	}else{
 		fmt.Print("Empty tree")
 	}
-	nm:="Directorio" + p.Identifier +"_Report"
-	createDotFile(path + nm + ".dot")
-	execDot(path + nm + ".dot", path + nm + ".png")
+	pth := GetPathWODot(path)
+	createDotFile(pth + ".dot")
+	execDot(pth + ".dot", pth+ ".png")
 }
 
 func createSbReport(r Super_Boot,p Mounted_partition, path string){
@@ -49,9 +49,9 @@ func createSbReport(r Super_Boot,p Mounted_partition, path string){
 	}else{
 		fmt.Print("Empty table")
 	}
-	nm:="SB" + p.Identifier +"_Report"
-	createDotFile(path + nm + ".dot")
-	execDot(path + nm + ".dot", path + nm + ".png")
+	pth := GetPathWODot(path)
+	createDotFile(pth + ".dot")
+	execDot(pth + ".dot", pth+ ".png")
 }
 
 func createDiskReport(r mbr,p Mounted_partition, path string){
@@ -63,9 +63,9 @@ func createDiskReport(r mbr,p Mounted_partition, path string){
 	}else{
 		fmt.Print("Empty table")
 	}
-	nm:="Disk" + p.Identifier +"_Report"
-	createDotFile(path + nm + ".dot")
-	execDot(path + nm + ".dot", path + nm + ".png")
+	pth := GetPathWODot(path)
+	createDotFile(pth + ".dot")
+	execDot(pth + ".dot", pth+ ".png")
 }
 
 func createMbrReport(r mbr, path string){
@@ -76,9 +76,9 @@ func createMbrReport(r mbr, path string){
 	}else{
 		fmt.Print("Empty table")
 	}
-	nm:="MBR" + strconv.Itoa(int(r.Disk_signature)) +"_Report"
-	createDotFile(path + nm + ".dot")
-	execDot(path + nm + ".dot", path + nm + ".png")
+	pth := GetPathWODot(path)
+	createDotFile(pth + ".dot")
+	execDot(pth + ".dot", pth+ ".png")
 }
 
 func GetContent(r avd_binary){
@@ -146,8 +146,8 @@ func diskReport(r mbr){
 				Content += "<tr><td colspan=\"" + strconv.Itoa(logical*3) + "\">Extendida " +strconv.Itoa(CalcPercentage(r.Size, e.Size)) + "%</td></tr>"+ "\n"
 				Content += "<tr>"+ "\n"
 				for _,element := range r.Partitions{
-					if(e.Status!='0'){
-						if(e.Type=='l'){
+					if(element.Status!='0'){
+						if(element.Type=='l' || element.Type=='L'){
 							eb :=ebr{}
 							ebr_size := unsafe.Sizeof(eb)
 							Content += "<td>EBR "+ strconv.Itoa(CalcPercentage(e.Size, int64(ebr_size))) + "%</td>" + "\n"
